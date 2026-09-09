@@ -121,7 +121,8 @@ def test_ci_uses_immutable_actions_and_exact_tool_versions():
     assert 'NIGHT_LIGHT_PYTHON: "3.14.7"' in workflow
     assert 'NIGHT_LIGHT_PYTHON_BUILD: "20260901"' in workflow
     assert "UV_PYTHON_PREFERENCE: only-managed" in workflow
-    assert "uv python install $env:NIGHT_LIGHT_PYTHON --managed-python --no-bin --no-registry" in workflow
+    assert "uv python install $env:NIGHT_LIGHT_PYTHON --no-bin --no-registry" in workflow
+    assert "--managed-python --no-bin --no-registry" not in workflow
     assert 'version: "0.12.9"' in workflow
     assert "WINDOWS_SIGNING_CERTIFICATE_BASE64" in workflow
     assert "WINDOWS_SIGNING_CERTIFICATE_PASSWORD" in workflow
