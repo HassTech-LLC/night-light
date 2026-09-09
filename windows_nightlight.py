@@ -20,8 +20,11 @@ _HEADER = b"CB\x01\x00"
 _STATE_OFFSET = 18
 _ENABLED_MARKER = 0x15
 _DISABLED_MARKER = 0x13
-# Unknown markers (including 0x10) remain fail-safe until independently labeled.
+# Windows 11 build 26200 emits 0x10 for the inactive/default state. Treating it
+# as unknown permanently pauses the HT filter on that build.
+_DEFAULT_DISABLED_MARKER = 0x10
 _CURRENT_ENABLED_MARKERS = frozenset((0x15,))
+_CURRENT_DISABLED_MARKERS = frozenset((_DEFAULT_DISABLED_MARKER, _DISABLED_MARKER))
 
 
 @dataclass(frozen=True)
@@ -41,7 +44,7 @@ def parse_cloudstore_state(data: bytes) -> WindowsNightLightStatus:
     marker = data[_STATE_OFFSET]
     if marker in _CURRENT_ENABLED_MARKERS:
         return WindowsNightLightStatus(True, "Windows Night Light is on")
-    if marker == _DISABLED_MARKER:
+    if marker in _CURRENT_DISABLED_MARKERS:
         return WindowsNightLightStatus(False, "Windows Night Light is off")
     return WindowsNightLightStatus(None, "Windows Night Light state is unknown")
 

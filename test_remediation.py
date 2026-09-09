@@ -9,10 +9,10 @@ from nightlight_engine import NightLightEngine
 from windows_nightlight import parse_cloudstore_state
 
 
-def test_cloudstore_parser_does_not_guess_unverified_marker_variant():
+def test_cloudstore_parser_accepts_windows_11_default_disabled_marker():
     data = bytearray(b"CB\x01\x00" + bytes(39))
     data[18] = 0x10
-    assert parse_cloudstore_state(bytes(data)).is_enabled is None
+    assert parse_cloudstore_state(bytes(data)).is_enabled is False
 
 
 def test_cloudstore_parser_keeps_unknown_marker_safe():

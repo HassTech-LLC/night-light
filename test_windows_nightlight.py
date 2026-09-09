@@ -32,6 +32,15 @@ class WindowsNightLightTests(unittest.TestCase):
         ):
             self.assertFalse(get_windows_nightlight_status().is_enabled)
 
+    def test_detects_default_disabled_cloudstore_payload(self):
+        data = bytearray(b"CB\x01\x00" + bytes(39))
+        data[18] = 0x10
+        with patch("windows_nightlight.winreg.OpenKey", return_value=_Key()), patch(
+            "windows_nightlight.winreg.QueryValueEx",
+            return_value=(bytes(data), 3),
+        ):
+            self.assertFalse(get_windows_nightlight_status().is_enabled)
+
     def test_smart_mode_suppresses_widget_matrix_when_native_is_on(self):
         engine = NightLightEngine()
         engine._mag_available = False
