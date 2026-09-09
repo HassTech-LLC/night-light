@@ -20,7 +20,7 @@ jobs:
       attestations: write
     env:
       NIGHT_LIGHT_BY_HT_DISABLE_DISPLAY_BACKEND: "1"
-      NIGHT_LIGHT_BY_HT_CONFIG_DIR: ${{ runner.temp }}\night-light-test-state
+      NIGHT_LIGHT_BY_HT_CONFIG_DIR: ${{ github.workspace }}\.ci-test-state
       NIGHT_LIGHT_PYTHON: "3.14.7"
       NIGHT_LIGHT_PYTHON_BUILD: "20260901"
       UV_PYTHON_PREFERENCE: only-managed
