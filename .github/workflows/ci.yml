@@ -39,7 +39,7 @@ jobs:
 
       - name: Install exact managed Python
         shell: pwsh
-        run: uv python install $env:NIGHT_LIGHT_PYTHON --managed-python --no-bin --no-registry
+        run: uv python install $env:NIGHT_LIGHT_PYTHON --no-bin --no-registry
 
       - name: Verify exact toolchain
         shell: pwsh
