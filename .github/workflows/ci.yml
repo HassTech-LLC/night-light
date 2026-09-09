@@ -18,7 +18,6 @@ jobs:
       contents: read
       id-token: write
       attestations: write
-      artifact-metadata: write
     env:
       NIGHT_LIGHT_BY_HT_DISABLE_DISPLAY_BACKEND: "1"
       NIGHT_LIGHT_BY_HT_CONFIG_DIR: ${{ runner.temp }}\night-light-test-state
