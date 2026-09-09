@@ -20,6 +20,8 @@ _HEADER = b"CB\x01\x00"
 _STATE_OFFSET = 18
 _ENABLED_MARKER = 0x15
 _DISABLED_MARKER = 0x13
+# Unknown markers (including 0x10) remain fail-safe until independently labeled.
+_CURRENT_ENABLED_MARKERS = frozenset((0x15,))
 
 
 @dataclass(frozen=True)
@@ -30,6 +32,18 @@ class WindowsNightLightStatus:
     @property
     def is_available(self) -> bool:
         return self.is_enabled is not None
+
+
+def parse_cloudstore_state(data: bytes) -> WindowsNightLightStatus:
+    """Decode a known CloudStore record without guessing unknown formats."""
+    if not isinstance(data, bytes) or len(data) <= _STATE_OFFSET or data[:4] != _HEADER:
+        return WindowsNightLightStatus(None, "Windows Night Light state format is unsupported")
+    marker = data[_STATE_OFFSET]
+    if marker in _CURRENT_ENABLED_MARKERS:
+        return WindowsNightLightStatus(True, "Windows Night Light is on")
+    if marker == _DISABLED_MARKER:
+        return WindowsNightLightStatus(False, "Windows Night Light is off")
+    return WindowsNightLightStatus(None, "Windows Night Light state is unknown")
 
 
 def get_windows_nightlight_status() -> WindowsNightLightStatus:
@@ -44,12 +58,4 @@ def get_windows_nightlight_status() -> WindowsNightLightStatus:
 
     if value_type != winreg.REG_BINARY or not isinstance(data, bytes):
         return WindowsNightLightStatus(None, "Windows Night Light returned an unsupported state")
-    if len(data) <= _STATE_OFFSET or data[:4] != _HEADER:
-        return WindowsNightLightStatus(None, "Windows Night Light state format is unsupported")
-
-    marker = data[_STATE_OFFSET]
-    if marker == _ENABLED_MARKER:
-        return WindowsNightLightStatus(True, "Windows Night Light is on")
-    if marker == _DISABLED_MARKER:
-        return WindowsNightLightStatus(False, "Windows Night Light is off")
-    return WindowsNightLightStatus(None, "Windows Night Light state is unknown")
+    return parse_cloudstore_state(data)

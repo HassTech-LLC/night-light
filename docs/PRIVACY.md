@@ -1,10 +1,10 @@
 # Privacy
 
-Night Light by HT is designed as a local-first desktop utility.
+Night Light is designed as a local-first desktop utility.
 
 ## Current version
 
-The current application stores warmth, brightness, enabled state, transition preference, autostart preference, and a random per-install localhost IPC token in the user's application-data folder. It does not require an account or analytics service. The token is used only to reject unauthenticated local commands and is never sent over a network interface.
+The current application stores warmth, brightness, enabled state, transition preference, autostart preference, and a random per-user localhost IPC secret in `%APPDATA%/NightLightWidget` (or the platform fallback directory). It does not require an account or analytics service. The reusable secret stays on disk and is never transmitted. Bounded local loopback messages contain fresh nonces, direction-bound authentication proofs, commands, and command-bound acknowledgements. The client verifies the server proof before sending a command. This protects against an unauthenticated first listener and replay; it does not protect against software that can already read the same user's configuration. Configuration writes are serialized across processes and atomically replaced. Legacy bearer-first clients are intentionally incompatible and must be closed by the user before upgrading; the new client fails closed rather than taking over an occupied endpoint.
 
 ## Smart Mode design
 

@@ -1,0 +1,75 @@
+Night Light — Third-Party Notices
+=================================
+
+This file applies to the Windows distribution of Night Light 0.1.0 built with
+CPython 3.14.7 from astral-sh/python-build-standalone release 20260901. The
+application's own copyright and MIT license remain in LICENSE and are not
+replaced or modified by this notice.
+
+Shipped application and runtime components
+------------------------------------------
+
+* CPython 3.14.7 — Python Software Foundation License Version 2 and historical
+  Python licenses. See THIRD-PARTY-LICENSES/CPython-3.14.7-LICENSE.txt and the
+  python-build-standalone CPython license copy.
+* python-build-standalone 20260901 — Mozilla Public License 2.0 build and
+  distribution material. The exact release commit used by uv is
+  4bb01f09aaf362c71e891be4a41cb6d6ddf830b3. See its MPL-2.0 license file.
+* OpenSSL 3.5.8 — Apache License 2.0. The exact build recipe is pinned by the
+  python-build-standalone release above. See its OpenSSL license file.
+* Expat — MIT license. Runtime reports expat_2.8.2; the standalone builder's
+  external Expat recipe is 2.8.4. CPython may use its vendored pyexpat copy.
+  See the python-build-standalone Expat license file.
+* liblzma/XZ 5.8.3 — 0BSD for the liblzma code used by the runtime. This exact
+  version and source SHA-256 are recorded by the standalone builder recipe.
+  See the liblzma license file.
+* zlib compatibility API 1.3.1 over zlib-ng 2.2.4 — zlib license. See the
+  standalone-builder zlib and exact zlib-ng license files.
+* Zstandard 1.5.7 — BSD-3-Clause or GPL-2.0-only. Both exact upstream license
+  alternatives are included. CPython's _zstd extension is present.
+* bzip2 1.0.8 — bzip2 license. See the standalone-builder bzip2 license.
+* SQLite 3.53.1 — public domain. See the standalone-builder SQLite notice.
+* Tcl/Tk 9.0.4 and Tix 8.4.3.6 — Tcl/Tk and Tix licenses. The runtime reports
+  Tcl/Tk 9.0. See the standalone-builder Tcl and Tix license files.
+* libtommath 1.3.0 — Unlicense/public-domain dedication, bundled by Tcl 9.0.4.
+  See libtommath-Tcl-9.0.4-LICENSE.txt.
+* libffi 3.4.8 — MIT license. See the standalone-builder libffi license.
+* mpdecimal 4.0.0 — BSD-2-Clause. See the standalone-builder mpdecimal license.
+* CustomTkinter 5.2.2 — MIT license. Its wheel includes the
+  CustomTkinter_shapes_font.otf rendering font and the project distribution
+  declares that package under the same MIT license; no separate font license
+  file is present in the wheel. This is the documented license basis for that
+  shapes font. See CustomTkinter-5.2.2-LICENSE.txt.
+* Roboto Regular and Medium fonts, distributed inside CustomTkinter 5.2.2 —
+  Apache License 2.0. See Roboto-LICENSE.txt.
+* darkdetect 0.8.0 — BSD-3-Clause. See its license file.
+* packaging 26.3 — Apache-2.0 or BSD-2-Clause. All three upstream license files
+  are included.
+* Pillow 12.3.0 — HPND. Pillow's full license file also carries the notices and
+  license terms for its bundled image/font/color codec libraries. The actual
+  build reports zlib 1.3.1 compatibility over zlib-ng 2.3.3,
+  libjpeg-turbo 3.1.4.1, libtiff 4.7.1, FreeType 2.14.3, Little CMS 2.19,
+  WebP 1.6.0, libavif 1.4.2, and OpenJPEG 2.5.4. See its full license file.
+* Microsoft Visual C++ Runtime DLLs are redistributed as part of the Windows
+  CPython distribution and remain subject to Microsoft's redistributable-code
+  terms. Microsoft does not supply a redistributable license text file for
+  inclusion in an application bundle; this notice does not grant additional
+  rights. Windows API-set and UCRT system DLLs are not intentionally copied.
+
+Build tooling whose output is present in the executable
+-------------------------------------------------------
+
+* PyInstaller 6.22.2 bootloader — GPL-2.0-or-later with the PyInstaller
+  bootloader exception. See PyInstaller-6.22.2-COPYING.txt.
+* pyinstaller-hooks-contrib 2026.7 — Apache-2.0 or GPL-2.0-or-later. See its
+  license file.
+* altgraph 0.17.5 — MIT; pefile 2024.8.26 — MIT; pywin32-ctypes 0.2.3 — BSD.
+  These are PyInstaller build dependencies; their exact license files are
+  included even when their Python modules are not shipped at runtime.
+
+Build/test-only packages pytest, pluggy, iniconfig, Pygments, colorama,
+setuptools, and uv are not copied into the Night Light runtime. Their exact
+versions remain in uv.lock and the build-input/SBOM evidence. GitHub Actions
+used by CI are pinned to immutable commits in .github/workflows/ci.yml.
+
+No pystray or six code is included in this distribution.

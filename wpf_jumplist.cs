@@ -55,23 +55,23 @@ namespace NightLightWpfJumpList
                 var jumpList = new JumpList();
 
                 AddTask(jumpList, exePath, (windowsState == "UNKNOWN" ? "? " : "✓ ") + "Windows Night Light: " + windowsState, "--show", "Detected Windows Night Light state");
-                AddTask(jumpList, exePath, "✓ Night Light by HT: " + hassState, "--show", "Current HT filter state");
-                AddTask(jumpList, exePath, "Adjust HT Warmth...", "--show", "Open the Night Light by HT warmth slider");
-                AddTask(jumpList, exePath, (strength == "25" ? "✓ " : "") + "HT: 25% (Soft)", "--strength 25", "Set HT warmth to 25%");
-                AddTask(jumpList, exePath, (strength == "50" ? "✓ " : "") + "HT: 50% (Balanced)", "--strength 50", "Set HT warmth to 50%");
-                AddTask(jumpList, exePath, (strength == "75" ? "✓ " : "") + "HT: 75% (Warm)", "--strength 75", "Set HT warmth to 75%");
-                AddTask(jumpList, exePath, (strength == "100" ? "✓ " : "") + "HT: 100% (Maximum)", "--strength 100", "Set HT warmth to 100%");
+                AddTask(jumpList, exePath, "✓ Night Light: " + hassState, "--show", "Current Night Light filter state");
+                AddTask(jumpList, exePath, "Adjust Night Light Warmth...", "--show", "Open the Night Light warmth slider");
+                AddTask(jumpList, exePath, (strength == "25" ? "✓ " : "") + "Night Light: 25% (Soft)", "--strength 25", "Set Night Light warmth to 25%");
+                AddTask(jumpList, exePath, (strength == "50" ? "✓ " : "") + "Night Light: 50% (Balanced)", "--strength 50", "Set Night Light warmth to 50%");
+                AddTask(jumpList, exePath, (strength == "75" ? "✓ " : "") + "Night Light: 75% (Warm)", "--strength 75", "Set Night Light warmth to 75%");
+                AddTask(jumpList, exePath, (strength == "100" ? "✓ " : "") + "Night Light: 100% (Maximum)", "--strength 100", "Set Night Light warmth to 100%");
                 if (windowsState == "ON")
                 {
                     AddTask(jumpList, exePath, "Turn Windows Night Light Off", "--windows-off", "One-way action: this app never turns Windows Night Light on");
                 }
-                AddTask(jumpList, exePath, "Toggle Night Light by HT", "--toggle", "Turn only the HT filter on or off");
-                AddTask(jumpList, exePath, "Turn Night Light by HT Off", "--strength 0", "Turn only the HT filter off");
+                AddTask(jumpList, exePath, "Toggle Night Light", "--toggle", "Turn only the Night Light filter on or off");
+                AddTask(jumpList, exePath, "Turn Night Light Off", "--strength 0", "Turn only the Night Light filter off");
 
                 JumpList.SetJumpList(app, jumpList);
                 jumpList.Apply();
 
-                Console.WriteLine("SUCCESS: Night Light by HT taskbar JumpList registered.");
+                Console.WriteLine("SUCCESS: Night Light taskbar JumpList registered.");
             }
             catch (Exception ex)
             {

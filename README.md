@@ -1,6 +1,6 @@
-# Night Light by HT
+# Night Light
 
-Night Light by HT is a compact Windows 11 evening-light controller from HassTech. It provides visible, one-click control over display warmth and software dimming while refusing to stack its warmth transform over Windows Night Light.
+Night Light is a compact Windows 11 evening-light controller from HassTech. It provides visible, one-click control over display warmth and software dimming while refusing to stack its warmth transform over Windows Night Light.
 
 > **Status: alpha.** The working desktop filter is present. The researched sunset-led adaptive Smart Mode is fully specified but is not yet wired into the installed application. The project does not claim to prevent melatonin suppression or treat a sleep condition.
 
@@ -11,7 +11,7 @@ Night Light by HT is a compact Windows 11 evening-light controller from HassTech
 - Warmth control from 6500 K to an intentionally extreme 1200 K endpoint.
 - Software brightness attenuation for darker late-night use.
 - Presets for Candle, Night Owl, Cozy, and Daylight.
-- Separate, visible Windows Night Light and Night Light by HT states.
+- Separate, visible Windows Night Light and Night Light states.
 - Automatic suspension of every HT display effect whenever Windows Night Light is detected.
 - A one-way action that can turn Windows Night Light off but cannot turn it on.
 - Jump List status and quick actions; sliders remain in the flyout because Windows taskbar right-click surfaces are Jump Lists, not arbitrary embedded UI.
@@ -28,6 +28,40 @@ Smart Mode will be **sunset-led and locally adaptive**:
 - Sunrise and wake activity restore neutral daytime output.
 
 See [Smart Mode specification](docs/SMART_MODE_SPEC.md) and [circadian research](docs/research/CIRCADIAN_LIGHTING.md).
+
+## Portable candidate: extract, run, update, remove
+
+The unsigned candidate is **not release-cleared**. No installer is required.
+Only run it in an authorized disposable Windows test account until the native,
+hardware, accessibility, multi-user and signing gates have been completed.
+
+1. Extract the entire ZIP into a stable user-owned folder. Keep `NightLight.exe`
+   and all three helper EXEs together; do not run directly from inside the ZIP.
+2. Run `NightLight.exe`. Launch can affect the display and register the app's
+   taskbar/Jump List identity. The package has been inspected, not live-launched
+   on the operator account. Unknown Windows Night Light state pauses filtering.
+3. **Start with Windows is optional:** enable it explicitly in the flyout.
+   For a desktop shortcut, use Windows **Send to > Desktop (create shortcut)**
+   on `NightLight.exe`; pin that shortcut only if desired. Shortcuts are opt-in,
+   not required to run the portable app.
+4. To update, disable Start with Windows if changing the folder, choose **Quit
+   App**, and manually close any legacy version before replacing files. Extract
+   the new package as a whole; do not mix helper versions. Recreate only your
+   own shortcuts if the path changes, then opt back into startup if desired.
+   The v2 IPC protocol intentionally rejects older bearer-protocol clients.
+5. To remove, disable **Start with Windows**, choose **Quit App**, unpin the app,
+   delete only shortcuts you created for it, and delete its extracted folder.
+   Optional settings removal: delete `%APPDATA%\NightLightWidget` only after all
+   versions are closed. This includes the IPC credential and any
+   `config.json.corrupt-*` recovery files; retain those privately if diagnosing
+   a problem. Do not delete shared Windows Jump List databases or other apps'
+   registry entries. If startup removal fails, use Windows startup controls or
+   remove only this app's `NightLightWidget` value under
+   `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` after checking its target.
+
+Internal settings and application identifiers remain compatible; the public
+product name is Night Light. Signed installer lifecycle testing is required
+only if an installer is later selected as the delivery channel.
 
 ## Install for development
 
@@ -76,7 +110,7 @@ No generated executable is committed to the repository.
 
 ## Privacy and scientific boundary
 
-Night Light by HT is designed to work locally. Smart Mode should retain only coarse location and minimal timing observations; it must never collect screen content. See [Privacy](docs/PRIVACY.md).
+Night Light is designed to work locally. Smart Mode should retain only coarse location and minimal timing observations; it must never collect screen content. See [Privacy](docs/PRIVACY.md).
 
 Color temperature is not a biological measurement. Actual circadian exposure depends on display spectrum, output intensity, room lighting, viewing distance, timing, duration, and individual sensitivity. See [Research](docs/research/CIRCADIAN_LIGHTING.md).
 

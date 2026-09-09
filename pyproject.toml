@@ -20,7 +20,6 @@ classifiers = [
 dependencies = [
   "customtkinter>=5.2,<6",
   "Pillow>=10,<13",
-  "pystray>=0.19,<1",
 ]
 
 [project.optional-dependencies]
@@ -39,8 +38,10 @@ py-modules = [
   "icons",
   "main",
   "nightlight_engine",
+  "release",
   "tray_app",
   "ui_flyout",
+  "win32_tray",
   "windows_nightlight",
 ]
 

@@ -1,4 +1,4 @@
-"""Pure presentation state for the Windows + Night Light by HT pipeline."""
+"""Pure presentation state for the Windows + Night Light pipeline."""
 
 from dataclasses import dataclass
 from typing import Optional
@@ -20,6 +20,7 @@ def derive_display_status(
     app_enabled: bool,
     brightness: float,
     windows_active: Optional[bool],
+    backend_applied: Optional[bool] = True,
 ) -> DisplayStatus:
     """Return honest user-facing state without implying control of Windows."""
     windows_label = (
@@ -32,28 +33,35 @@ def derive_display_status(
         elif windows_active is False:
             summary = "No night filter is active"
         else:
-            summary = "Night Light by HT is off; Windows status is unconfirmed"
+            summary = "Night Light is off; Windows status is unconfirmed"
         return DisplayStatus(
             windows_label, windows_active, "OFF", False, False, summary,
-            "Night Light by HT is disabled",
+            "Night Light is disabled",
         )
 
     if windows_active is True:
         return DisplayStatus(
             windows_label, windows_active, "PAUSED", True, False,
-            "Windows is active; Night Light by HT is fully paused",
-            "Turn Windows Night Light off to use the HT filter",
+            "Windows is active; Night Light is fully paused",
+            "Turn Windows Night Light off to use the Night Light filter",
         )
 
     if windows_active is None:
         return DisplayStatus(
             windows_label, windows_active, "PAUSED", True, False,
-            "Windows status is unconfirmed; Night Light by HT is paused",
-            "HT waits for confirmation that Windows Night Light is off",
+            "Windows status is unconfirmed; Night Light is paused",
+            "Night Light waits for confirmation that Windows Night Light is off",
+        )
+
+    if backend_applied is False:
+        return DisplayStatus(
+            windows_label, windows_active, "FAILED", True, False,
+            "Night Light could not apply the display filter",
+            "The display backend rejected the requested transform",
         )
 
     return DisplayStatus(
         windows_label, windows_active, "ON", True, True,
-        "Night Light by HT is active",
+        "Night Light is active",
         "Windows Night Light is off",
     )

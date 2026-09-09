@@ -3,42 +3,109 @@ name: Windows CI
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   test-and-build:
-    runs-on: windows-latest
-    timeout-minutes: 20
+    runs-on: windows-2025
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     env:
       NIGHT_LIGHT_BY_HT_DISABLE_DISPLAY_BACKEND: "1"
-      NIGHT_LIGHT_BY_HT_CONFIG_DIR: ${{ runner.temp }}\night-light-by-ht-test-state
+      NIGHT_LIGHT_BY_HT_CONFIG_DIR: ${{ runner.temp }}\night-light-test-state
+      NIGHT_LIGHT_PYTHON: "3.14.7"
+      NIGHT_LIGHT_PYTHON_BUILD: "20260901"
+      UV_PYTHON_PREFERENCE: only-managed
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v6
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          python-version: "3.13"
-          cache: pip
+          persist-credentials: false
 
-      - name: Install project and test dependencies
-        run: python -m pip install -e ".[dev]"
-
-      - name: Run tests
-        run: python -m pytest
-
-      - name: Build Windows bundle
-        run: python build.py
-
-      - name: Upload unsigned development bundle
-        uses: actions/upload-artifact@v7
+      - name: Set up exact uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
-          name: night-light-by-ht-windows-unsigned
-          path: dist/
+          version: "0.12.9"
+          enable-cache: false
+
+      - name: Install exact managed Python
+        shell: pwsh
+        run: uv python install $env:NIGHT_LIGHT_PYTHON --managed-python --no-bin --no-registry
+
+      - name: Verify exact toolchain
+        shell: pwsh
+        run: |
+          $python = (uv python find $env:NIGHT_LIGHT_PYTHON).Trim()
+          if ((& $python -c "import platform; print(platform.python_version())") -ne $env:NIGHT_LIGHT_PYTHON) { throw "Wrong Python patch" }
+          if ((Get-Content (Join-Path (Split-Path $python) "BUILD")).Trim() -ne $env:NIGHT_LIGHT_PYTHON_BUILD) { throw "Wrong managed Python build" }
+          if (-not ((uv --version).StartsWith("uv 0.12.9 "))) { throw "Wrong uv version" }
+
+      - name: Install locked dependencies
+        run: uv sync --frozen --extra dev --python 3.14.7
+
+      - name: Run isolated tests
+        run: uv run --frozen --python 3.14.7 pytest
+
+      - name: Build unsigned Windows payload
+        run: uv run --frozen --python 3.14.7 python build.py
+
+      - name: Require owner signing identity and sign tagged release PEs
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          WINDOWS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
+          WINDOWS_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+        run: |
+          if (-not $env:WINDOWS_SIGNING_CERTIFICATE_BASE64 -or -not $env:WINDOWS_SIGNING_CERTIFICATE_PASSWORD -or -not $env:WINDOWS_TIMESTAMP_URL) {
+            throw "Tagged releases require owner-controlled signing certificate, password, and timestamp URL."
+          }
+          $pfx = Join-Path $env:RUNNER_TEMP "night-light-owner-signing.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_SIGNING_CERTIFICATE_BASE64))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse |
+            Where-Object FullName -Match '\\x64\\signtool.exe$' | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $signtool) { throw "signtool.exe not found in pinned runner image" }
+          foreach ($pe in @("dist\NightLight.exe", "dist\shortcut_appid_register.exe", "dist\windows_nightlight_off.exe", "dist\wpf_jumplist.exe")) {
+            & $signtool.FullName sign /fd SHA256 /f $pfx /p $env:WINDOWS_SIGNING_CERTIFICATE_PASSWORD /tr $env:WINDOWS_TIMESTAMP_URL /td SHA256 $pe
+            if ($LASTEXITCODE -ne 0) { throw "Signing failed: $pe" }
+            & $signtool.FullName verify /pa /all /v $pe
+            if ($LASTEXITCODE -ne 0) { throw "Signature verification failed: $pe" }
+          }
+          Remove-Item $pfx -Force
+
+      - name: Package exact candidate, notices, SBOM, and checksums
+        run: uv run --frozen --python 3.14.7 python release.py --dist dist --output release/Night-Light-windows.zip --evidence release
+
+      - name: Verify release artifact
+        run: uv run --frozen --python 3.14.7 python release.py --verify release/Night-Light-windows.zip --evidence release
+
+      - name: Attest signed tagged release with repository OIDC identity
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: release/Night-Light-windows.zip
+
+      - name: Upload verified candidate and evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: Night-Light-windows-${{ github.sha }}
+          path: |
+            release/Night-Light-windows.zip
+            release/SHA256SUMS.txt
+            release/VERIFICATION.json
+            release/sbom.cdx.json
+            release/SOURCE-MANIFEST.json
+            release/REPRODUCIBILITY.json
           if-no-files-found: error
-
+          compression-level: 0
+          retention-days: 14

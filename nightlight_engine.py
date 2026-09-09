@@ -78,6 +78,7 @@ class NightLightEngine:
         self.brightness: float = 1.0    # 1.0 = 100%
         self.transition_duration: float = 0.20  # Fast, smooth 200ms transitions
         self._windows_nightlight_active: bool = False
+        self.is_applied: bool = False
 
         # Current applied color factors
         self._current_r: float = 1.0
@@ -118,6 +119,7 @@ class NightLightEngine:
             # HT matrix is fully neutral, including its software dimming.
             r = g = b = 1.0
         if not self._mag_available:
+            self.is_applied = False
             return False
 
         if not self._mag_initialized:
@@ -133,9 +135,12 @@ class NightLightEngine:
 
         res = self._mag.MagSetFullscreenColorEffect(ctypes.byref(effect))
         if res:
+            self.is_applied = True
             self._current_r = r
             self._current_g = g
             self._current_b = b
+        if not res:
+            self.is_applied = False
         return bool(res)
 
     def _get_target_rgb(self, enabled: bool, temp_k: int, brightness: float) -> Tuple[float, float, float]:
@@ -258,6 +263,7 @@ class NightLightEngine:
         """Immediately restores screen color to normal 100% daylight."""
         self._transition_id += 1
         self.is_enabled = False
+        self.is_applied = False
         try:
             if self._mag_available:
                 effect = MAGCOLOREFFECT()

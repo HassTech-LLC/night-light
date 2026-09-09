@@ -1,5 +1,5 @@
 ﻿"""
-Main entry point for Night Light by HT.
+Main entry point for Night Light.
 Handles single-instance dispatch, CLI flags, and starting the Tray application.
 """
 
@@ -9,48 +9,61 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.resolve()))
 
-from tray_app import TrayApp, send_ipc_command
+from ipc_transport import send_ipc_command
 from create_shortcuts import create_all_shortcuts
+
+
+def command_from_args(args):
+    """Translate CLI arguments into an application command."""
+    args = list(args)
+    if "--shortcut" in args or "--install-shortcut" in args:
+        return "SHORTCUT"
+    if "--background" in args:
+        return "START"
+    if "--show" in args or "--adjust" in args or "--open" in args:
+        return "SHOW"
+    if "--toggle" in args:
+        return "TOGGLE"
+    if "--preset" in args:
+        try:
+            return f"PRESET {args[args.index('--preset') + 1]}"
+        except (IndexError, ValueError):
+            return "PRESET 6500"
+    if "--strength" in args:
+        try:
+            strength = int(args[args.index('--strength') + 1])
+        except (IndexError, ValueError):
+            strength = 0
+        return f"STRENGTH {max(0, min(100, strength))}"
+    if "--windows-off" in args:
+        return "WINDOWS_OFF"
+    return "TOGGLE"
 
 
 def main():
     args = sys.argv[1:]
-
-    if "--shortcut" in args or "--install-shortcut" in args:
+    command = command_from_args(args)
+    if command == "SHORTCUT":
         create_all_shortcuts()
-        print("Created Night Light by HT shortcuts successfully!")
+        print("Created Night Light shortcuts successfully!")
         return
 
-    command = "TOGGLE"
-    if "--background" in args:
-        command = "START"
-    elif "--show" in args or "--adjust" in args or "--open" in args:
-        command = "SHOW"
-    elif "--toggle" in args:
-        command = "TOGGLE"
-    elif "--preset" in args:
-        try:
-            idx = args.index("--preset")
-            if idx + 1 < len(args):
-                command = f"PRESET {args[idx+1]}"
-        except Exception:
-            pass
-    elif "--strength" in args:
-        try:
-            idx = args.index("--strength")
-            strength = int(args[idx + 1])
-            command = f"STRENGTH {max(0, min(100, strength))}"
-        except (IndexError, ValueError):
-            pass
-    elif "--windows-off" in args:
-        command = "WINDOWS_OFF"
-
-    # If instance already running, send IPC command and exit immediately
-    if send_ipc_command(command):
-        sys.exit(0)
-
-    # First instance startup
-    app = TrayApp()
+    from ipc_transport import reserve_listener
+    try:
+        listener = reserve_listener()
+    except OSError:
+        # This process is a client for its entire lifetime, even if the peer
+        # disappears or denies authentication. Never retry as a resident.
+        if send_ipc_command(command):
+            raise SystemExit(0)
+        raise SystemExit("Night Light is already running or its local endpoint is unavailable.")
+    try:
+        # No display initialization or exit-reset registration before ownership.
+        from tray_app import TrayApp
+        app = TrayApp(listener)
+    except BaseException:
+        listener.close()
+        raise
     if command == "SHOW":
         app.root.after(150, app.show_flyout)
     elif command.startswith("PRESET"):

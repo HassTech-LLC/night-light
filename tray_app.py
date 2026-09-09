@@ -10,6 +10,7 @@ import atexit
 import ctypes
 from ctypes import wintypes
 import hmac
+import hashlib
 import os
 from pathlib import Path
 import socket
@@ -19,13 +20,14 @@ import threading
 import time
 from typing import Optional
 
-import pystray
-import pystray._win32 as win32_mod
 from PIL import Image
 import customtkinter as ctk
 
+from win32_tray import TrayIcon
+
 from nightlight_engine import engine
 from config_manager import config, get_or_create_ipc_token
+from ipc_transport import authenticate_request, acknowledge, send_ipc_command
 from ui_flyout import ModernFlyout
 from hud_overlay import HudToast
 from windows_nightlight import WindowsNightLightStatus, get_windows_nightlight_status
@@ -34,44 +36,34 @@ import icons
 
 APP_ID = "Hassan.NightLightWidget.App.1.0"
 
-try:
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
-except Exception:
-    pass
-
 IPC_PORT = 49382
 
 
 def parse_authenticated_ipc(payload: str, expected_token: str) -> Optional[str]:
     """Return the command only when the localhost payload has a valid token."""
+    if not isinstance(payload, str) or not isinstance(expected_token, str):
+        return None
     token, separator, command = payload.partition(" ")
-    if not separator or not hmac.compare_digest(token, expected_token):
+    if not separator or not token.isascii() or not expected_token.isascii():
+        return None
+    if not hmac.compare_digest(token, expected_token):
         return None
     command = command.strip()
     return command or None
 
 
-class CustomTrayIcon(win32_mod.Icon):
-    def __init__(self, *args, on_left_click=None, on_right_click=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.on_left_click_cb = on_left_click
-        self.on_right_click_cb = on_right_click
-
-    def _on_notify(self, wparam, lparam):
-        if lparam == win32_mod.WM_LBUTTONUP:
-            if self.on_left_click_cb:
-                self.on_left_click_cb(self)
-            else:
-                self()
-        elif lparam in (win32_mod.WM_RBUTTONUP, win32_mod.WM_CONTEXTMENU):
-            if self.on_right_click_cb:
-                self.on_right_click_cb(self)
-        else:
-            super()._on_notify(wparam, lparam)
+def ipc_ack(command: str, token: str) -> bytes:
+    """Create a server proof bound to the authenticated command."""
+    digest = hmac.new(token.encode("ascii"), command.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    return f"OK:{digest}".encode("ascii")
 
 
 class TrayApp:
-    def __init__(self):
+    def __init__(self, listener):
+        try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
+        except Exception:
+            pass
         self.root = ctk.CTk()
         self.root.withdraw()
 
@@ -80,9 +72,9 @@ class TrayApp:
 
         self.flyout: Optional[ModernFlyout] = None
         self.hud: Optional[HudToast] = None
-        self.tray_icon: Optional[CustomTrayIcon] = None
+        self.tray_icon: Optional[TrayIcon] = None
         self._is_running = True
-        self._server_sock: Optional[socket.socket] = None
+        self._server_sock: Optional[socket.socket] = listener
         self._ipc_token = get_or_create_ipc_token()
         self.windows_nightlight_status = WindowsNightLightStatus(None, "Checking Windows Night Light")
         if "windows_nightlight_mode" in config.data:
@@ -124,7 +116,7 @@ class TrayApp:
         self._ensure_jumplist()
 
         # Start Custom Tray Icon: Left-click = toggle, Right-click = show slider
-        self.tray_icon = CustomTrayIcon(
+        self.tray_icon = TrayIcon(
             name="NightLightByHT",
             icon=self._get_current_image(),
             title=self._get_tooltip(),
@@ -180,7 +172,7 @@ class TrayApp:
         k = engine.temperature_k
         strength_pct = int(((6500 - k) / (6500 - 1200)) * 100.0) if engine.is_enabled else 0
         return (
-            f"Windows: {state.windows_label} · HT: {state.hass_label}"
+            f"Windows Night Light: {state.windows_label} · Night Light: {state.hass_label}"
             f"\n{state.summary} · Warmth {strength_pct}%"
         )
 
@@ -189,6 +181,7 @@ class TrayApp:
             app_enabled=engine.is_enabled,
             brightness=engine.brightness,
             windows_active=self.windows_nightlight_status.is_enabled,
+            backend_applied=engine.is_applied,
         )
 
     def _get_current_image(self) -> Image.Image:
@@ -208,7 +201,10 @@ class TrayApp:
     def toggle_nightlight(self, show_hud: bool = True):
         """Toggles Night Light ON/OFF with smooth fade and HUD confirmation."""
         smooth = config.get("smooth_transitions", True)
+        if not engine.is_enabled and engine.temperature_k >= 6500:
+            engine.temperature_k = int(config.get("last_temperature_k", 3400))
         new_state = engine.toggle(smooth=smooth)
+        config.set("temperature_k", engine.temperature_k, save_now=False)
         config.set("enabled", new_state, save_now=True)
         self.update_tray()
 
@@ -225,9 +221,13 @@ class TrayApp:
         """Applies a specific color temperature preset."""
         if kelvin >= 6500:
             engine.set_state(temperature_k=6500, enabled=False, smooth=True)
+            if config.get("temperature_k", 3400) < 6500:
+                config.set("last_temperature_k", config.get("temperature_k", 3400), save_now=False)
+            config.set("temperature_k", 6500, save_now=True)
             config.set("enabled", False, save_now=True)
         else:
             engine.set_state(temperature_k=kelvin, brightness=1.0, enabled=True, smooth=True)
+            config.set("last_temperature_k", kelvin, save_now=False)
             config.set("temperature_k", kelvin, save_now=True)
             config.set("brightness", 1.0, save_now=True)
             config.set("enabled", True, save_now=True)
@@ -292,40 +292,30 @@ class TrayApp:
         """Background localhost TCP socket listener for single-instance triggers."""
         def _server():
             try:
-                self._server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                self._server_sock.bind(("127.0.0.1", IPC_PORT))
-                self._server_sock.listen(5)
-                self._server_sock.settimeout(1.0)
-
                 while self._is_running:
                     try:
                         conn, _ = self._server_sock.accept()
                         with conn:
                             conn.settimeout(0.5)
-                            payload = conn.recv(256).decode(
-                                "utf-8", errors="ignore"
-                            ).strip()
-                            data = parse_authenticated_ipc(payload, self._ipc_token)
-                            if data is None:
-                                conn.sendall(b"DENIED")
-                                continue
+                            data, nonces = authenticate_request(conn, self._ipc_token)
 
                             handled = False
                             cmd_upper = data.upper()
                             if cmd_upper == "TOGGLE":
                                 self._schedule_on_main(lambda: self.toggle_nightlight(show_hud=True))
                                 handled = True
+                            elif cmd_upper == "START":
+                                handled = True
                             elif cmd_upper in ("SHOW", "ADJUST", "OPEN"):
                                 self._schedule_on_main(self.show_flyout)
                                 handled = True
-                            elif cmd_upper.startswith("PRESET"):
+                            elif cmd_upper.split()[:1] == ["PRESET"]:
                                 parts = data.split()
                                 if len(parts) == 2 and parts[1].isdigit():
                                     k = max(1000, min(6500, int(parts[1])))
                                     self._schedule_on_main(lambda k=k: self.apply_preset(k))
                                     handled = True
-                            elif cmd_upper.startswith("STRENGTH"):
+                            elif cmd_upper.split()[:1] == ["STRENGTH"]:
                                 parts = data.split()
                                 if len(parts) == 2 and parts[1].isdigit():
                                     strength = max(0, min(100, int(parts[1])))
@@ -337,10 +327,14 @@ class TrayApp:
                                 self._schedule_on_main(self.turn_windows_nightlight_off)
                                 handled = True
 
-                            conn.sendall(b"OK" if handled else b"UNKNOWN")
+                            acknowledge(conn, self._ipc_token, data, nonces, handled)
                     except socket.timeout:
                         continue
-                    except Exception:
+                    except (ConnectionResetError, BrokenPipeError, UnicodeError, ValueError):
+                        continue
+                    except OSError:
+                        if self._is_running:
+                            continue
                         break
             except Exception as e:
                 print(f"[IPC Server] Error: {e}")
@@ -367,25 +361,16 @@ class TrayApp:
         sys.exit(0)
 
     def cleanup(self):
+        self._is_running = False
         try:
-            if self.tray_icon:
-                self.tray_icon.stop()
-                self.tray_icon = None
-            if self._server_sock:
-                self._server_sock.close()
-                self._server_sock = None
-        except Exception:
-            pass
-
-
-def send_ipc_command(command: str = "TOGGLE") -> bool:
-    """Sends command to running NightLight instance. Returns True if handled."""
-    try:
-        token = get_or_create_ipc_token()
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.settimeout(0.5)
-            client.connect(("127.0.0.1", IPC_PORT))
-            client.sendall(f"{token} {command}".encode("utf-8"))
-            return client.recv(16) == b"OK"
-    except Exception:
-        return False
+            config.save_immediate()
+        except Exception as error:
+            print(f'[Night Light] Cleanup configuration save failed: {error}')
+        for attribute, operation in (('tray_icon', 'stop'), ('_server_sock', 'close')):
+            resource = getattr(self, attribute, None)
+            if resource is not None:
+                try:
+                    getattr(resource, operation)()
+                    setattr(self, attribute, None)
+                except Exception as error:
+                    print(f'[Night Light] Cleanup {attribute} failed: {error}')

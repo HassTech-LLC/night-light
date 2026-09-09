@@ -49,13 +49,13 @@ class ModernFlyout(ctk.CTkToplevel):
         self.get_display_status = get_display_status
 
         # Window configuration
-        self.title("Night Light by HT")
+        self.title("Night Light")
         self.overrideredirect(True)
         self.attributes("-topmost", True)
         self.resizable(False, False)
 
         # Dimensions
-        self.flyout_width = 300
+        self.flyout_width = 360
         self.flyout_height = 510
 
         # Colors
@@ -102,7 +102,8 @@ class ModernFlyout(ctk.CTkToplevel):
 
         title_label = ctk.CTkLabel(
             title_box,
-            text="Night Light by HT",
+            height=20,
+            text="Night Light",
             font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"),
             text_color=self.COLOR_TEXT,
         )
@@ -148,7 +149,8 @@ class ModernFlyout(ctk.CTkToplevel):
 
         self.status_title = ctk.CTkLabel(
             status_text_box,
-            text="HT filter is ON",
+            height=20,
+            text="Night Light filter is ON",
             font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
             text_color=self.COLOR_TEXT,
             anchor="w",
@@ -157,6 +159,7 @@ class ModernFlyout(ctk.CTkToplevel):
 
         self.status_sub = ctk.CTkLabel(
             status_text_box,
+            height=20,
             text="Warm amber filter active",
             font=ctk.CTkFont(family="Segoe UI", size=10),
             text_color=self.COLOR_SUBTEXT,
@@ -166,13 +169,13 @@ class ModernFlyout(ctk.CTkToplevel):
 
         self.toggle_btn = ctk.CTkButton(
             toggle_inner,
-            text="FILTER OFF",
+            text="OFF",
             font=ctk.CTkFont(family="Segoe UI", size=10, weight="bold"),
             fg_color="#3b2218",
             hover_color="#522b1e",
             text_color="#f87171",
             corner_radius=6,
-            width=74,
+            width=104,
             height=26,
             command=self._on_toggle_clicked,
         )
@@ -193,6 +196,7 @@ class ModernFlyout(ctk.CTkToplevel):
 
         self.pipeline_summary = ctk.CTkLabel(
             pipeline_card,
+            height=20,
             text="Checking active protection…",
             font=ctk.CTkFont(family="Segoe UI", size=10, weight="bold"),
             text_color=self.COLOR_TEXT,
@@ -209,7 +213,7 @@ class ModernFlyout(ctk.CTkToplevel):
         )
         self.windows_badge.pack(side="left", fill="x", expand=True, padx=(0, 3))
         self.hass_badge = ctk.CTkLabel(
-            badges, text="HASSTECH: …", height=22, corner_radius=6,
+            badges, text="Night Light: …", height=22, corner_radius=6,
             fg_color="#2f323c", text_color=self.COLOR_SUBTEXT,
             font=ctk.CTkFont(family="Segoe UI", size=9, weight="bold"),
         )
@@ -239,7 +243,8 @@ class ModernFlyout(ctk.CTkToplevel):
 
         strength_title = ctk.CTkLabel(
             strength_header,
-            text="HT Warmth",
+            height=20,
+            text="Night Light Warmth",
             font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
             text_color=self.COLOR_TEXT,
         )
@@ -247,6 +252,7 @@ class ModernFlyout(ctk.CTkToplevel):
 
         self.strength_val_label = ctk.CTkLabel(
             strength_header,
+            height=20,
             text="65% · 3100K",
             font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
             text_color=self.COLOR_ACCENT,
@@ -283,6 +289,7 @@ class ModernFlyout(ctk.CTkToplevel):
 
         bright_title = ctk.CTkLabel(
             bright_header,
+            height=20,
             text="Software Dimming",
             font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
             text_color=self.COLOR_TEXT,
@@ -291,6 +298,7 @@ class ModernFlyout(ctk.CTkToplevel):
 
         self.bright_val_label = ctk.CTkLabel(
             bright_header,
+            height=20,
             text="100%",
             font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
             text_color="#60a5fa",
@@ -315,6 +323,7 @@ class ModernFlyout(ctk.CTkToplevel):
         # --- PRESETS ---
         preset_label = ctk.CTkLabel(
             self.outer_frame,
+            height=20,
             text="QUICK PRESETS",
             font=ctk.CTkFont(family="Segoe UI", size=9, weight="bold"),
             text_color=self.COLOR_SUBTEXT,
@@ -342,11 +351,15 @@ class ModernFlyout(ctk.CTkToplevel):
                 border_width=1,
                 hover_color="#2a2d36",
                 corner_radius=6,
+                width=82,
                 height=28,
                 command=lambda k=kelvin: self._apply_preset(k),
             )
-            btn.grid(row=0, column=idx, padx=2, sticky="ew")
-            presets_row.grid_columnconfigure(idx, weight=1)
+            column = idx % 2
+            row = idx // 2
+            btn.grid(row=row, column=column, padx=2, pady=2, sticky="ew")
+        presets_row.grid_columnconfigure(0, weight=1)
+        presets_row.grid_columnconfigure(1, weight=1)
 
         # --- FOOTER ---
         footer_frame = ctk.CTkFrame(self.outer_frame, fg_color="transparent")
@@ -380,8 +393,71 @@ class ModernFlyout(ctk.CTkToplevel):
         quit_btn.pack(side="right")
 
     def _bind_events(self):
+        self._keyboard_controls = []
+        self._enable_keyboard_controls(self.outer_frame)
+        self.bind('<Tab>', lambda event: self._cycle_focus(1))
+        self.bind('<Shift-Tab>', lambda event: self._cycle_focus(-1))
         self.bind("<FocusOut>", self._on_focus_out)
         self.bind("<Escape>", lambda e: self.hide_flyout())
+        self.bind_all("<Alt-KeyPress-Up>", self._adjust_focused_slider)
+        self.bind_all("<Alt-KeyPress-Down>", self._adjust_focused_slider)
+
+    def _enable_keyboard_controls(self, parent):
+        # CTk controls are Frames whose public bind delegates to a mouse canvas.
+        # Bind the actual focus-owning Frame, not that non-focusable canvas.
+        for widget in parent.winfo_children():
+            if isinstance(widget, (ctk.CTkButton, ctk.CTkCheckBox, ctk.CTkSlider)):
+                self._keyboard_controls.append(widget)
+                tk.Frame.configure(widget, takefocus=lambda *args, w=widget: int(w.cget('state') != 'disabled'))
+                tk.Misc.bind(widget, '<FocusIn>', lambda event, w=widget: self._focus_ring(w, True), add='+')
+                tk.Misc.bind(widget, '<FocusOut>', lambda event, w=widget: self._focus_ring(w, False), add='+')
+                if isinstance(widget, ctk.CTkSlider):
+                    for key, delta in (('Left', -1), ('Down', -1), ('Right', 1), ('Up', 1)):
+                        tk.Misc.bind(widget, f'<{key}>', lambda event, w=widget, d=delta: self._keyboard_slider(w, d))
+                else:
+                    for key in ('space', 'Return'):
+                        tk.Misc.bind(widget, f'<{key}>', lambda event, w=widget: self._keyboard_activate(w))
+            else:
+                self._enable_keyboard_controls(widget)
+
+    def _cycle_focus(self, direction):
+        controls = [w for w in self._keyboard_controls if w.winfo_viewable() and w.cget('state') != 'disabled']
+        if controls:
+            focused = self.focus_get()
+            index = controls.index(focused) if focused in controls else (-1 if direction > 0 else 0)
+            tk.Misc.focus_set(controls[(index + direction) % len(controls)])
+        return 'break'
+
+    def _focus_ring(self, widget, focused):
+        if isinstance(widget, ctk.CTkSlider):
+            widget.configure(border_width=2 if focused else 0, border_color=self.COLOR_ACCENT)
+        else:
+            widget.configure(border_width=2 if focused else 1, border_color=self.COLOR_ACCENT if focused else self.COLOR_CARD_BORDER)
+
+    def _keyboard_activate(self, widget):
+        if widget.cget('state') != 'disabled':
+            if isinstance(widget, ctk.CTkCheckBox):
+                widget.toggle()
+            else:
+                widget.invoke()
+        return 'break'
+
+    def _keyboard_slider(self, widget, delta):
+        value = max(float(widget.cget('from_')), min(float(widget.cget('to')), float(widget.get()) + delta))
+        widget.set(value)
+        widget.cget('command')(value)
+        self._on_slider_released(None)
+        return 'break'
+
+    def _adjust_focused_slider(self, event):
+        focused = self.focus_get()
+        if focused not in (self.strength_slider, self.bright_slider):
+            return
+        delta = 1 if event.keysym == "Up" else -1
+        value = float(focused.get()) + delta
+        focused.set(value)
+        focused.cget("command")(value)
+        return "break"
 
     def _on_focus_out(self, event):
         self.after(200, self._check_focus_and_hide)
@@ -416,22 +492,22 @@ class ModernFlyout(ctk.CTkToplevel):
         )
 
         if is_on:
-            self.status_title.configure(text=f"HT filter is {state.hass_label}")
+            self.status_title.configure(text=f"Night Light filter is {state.hass_label}")
             self.status_sub.configure(text=f"Warmth: {strength_pct}% · {k}K")
             self.status_icon_label.configure(text="🌙", text_color=self.COLOR_ACCENT)
             self.toggle_btn.configure(
-                text="FILTER OFF",
+                text="OFF",
                 fg_color="#3b2218",
                 hover_color="#522b1e",
                 text_color="#f87171",
             )
             self.toggle_card.configure(border_color=self.COLOR_ACCENT)
         else:
-            self.status_title.configure(text="HT filter is OFF")
+            self.status_title.configure(text="Night Light filter is OFF")
             self.status_sub.configure(text="Windows Night Light is not changed")
             self.status_icon_label.configure(text="☀️", text_color="#71717a")
             self.toggle_btn.configure(
-                text="FILTER ON",
+                text="ON",
                 fg_color="#1e3a5f",
                 hover_color="#2b4c7e",
                 text_color="#60a5fa",
@@ -451,7 +527,7 @@ class ModernFlyout(ctk.CTkToplevel):
             text=f"WINDOWS: {state.windows_label}", fg_color=windows_fg, text_color=windows_text
         )
         self.hass_badge.configure(
-            text=f"HASSTECH: {state.hass_label}", fg_color=hass_fg, text_color=hass_text
+            text=f"Night Light: {state.hass_label}", fg_color=hass_fg, text_color=hass_text
         )
         if state.windows_active is True:
             self.windows_off_btn.configure(
@@ -477,7 +553,10 @@ class ModernFlyout(ctk.CTkToplevel):
 
     def _on_toggle_clicked(self):
         new_state = not engine.is_enabled
+        if new_state and engine.temperature_k >= 6500:
+            engine.temperature_k = int(config.get("last_temperature_k", 3400))
         engine.set_state(enabled=new_state, smooth=True)
+        config.set("temperature_k", engine.temperature_k, save_now=False)
         config.set("enabled", new_state, save_now=True)
         self.update_ui_state()
         if self.on_state_change:
@@ -515,9 +594,13 @@ class ModernFlyout(ctk.CTkToplevel):
     def _apply_preset(self, kelvin: int):
         if kelvin >= 6500:
             engine.set_state(temperature_k=6500, enabled=False, smooth=True)
+            if config.get("temperature_k", 3400) < 6500:
+                config.set("last_temperature_k", config.get("temperature_k", 3400), save_now=False)
+            config.set("temperature_k", 6500, save_now=True)
             config.set("enabled", False, save_now=True)
         else:
             engine.set_state(temperature_k=kelvin, brightness=1.0, enabled=True, smooth=True)
+            config.set("last_temperature_k", kelvin, save_now=False)
             config.set("temperature_k", kelvin, save_now=True)
             config.set("brightness", 1.0, save_now=True)
             config.set("enabled", True, save_now=True)
@@ -528,7 +611,12 @@ class ModernFlyout(ctk.CTkToplevel):
 
     def _on_autostart_toggled(self):
         enable = bool(self.autostart_switch.get())
-        config.set_autostart(enable)
+        if not config.set_autostart(enable):
+            if enable:
+                self.autostart_switch.deselect()
+            else:
+                self.autostart_switch.select()
+            self.pipeline_summary.configure(text="Could not change Start with Windows")
 
     def _on_quit_clicked(self):
         self.hide_flyout()

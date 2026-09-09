@@ -1,5 +1,5 @@
 ﻿"""
-Modern HUD Toast Overlay for Night Light by HT.
+Modern HUD Toast Overlay for Night Light.
 Provides instant visual feedback when toggling Night Light from the pinned taskbar button.
 """
 
@@ -53,7 +53,7 @@ class HudToast(ctk.CTkToplevel):
 
         self.msg_label = ctk.CTkLabel(
             self.card,
-            text="Night Light by HT ON · 70% Strength",
+            text="Night Light ON · 70% Strength",
             font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
             text_color="#ffffff",
             anchor="w",
@@ -84,15 +84,15 @@ class HudToast(ctk.CTkToplevel):
         if is_enabled and not is_effective:
             self.card.configure(border_color="#facc15")
             self.icon_label.configure(text="⏸", text_color="#facc15")
-            self.msg_label.configure(text=f"Night Light by HT PAUSED · {detail}")
+            self.msg_label.configure(text=f"Night Light PAUSED · {detail}")
         elif is_enabled:
             self.card.configure(border_color="#ffaa2b")
             self.icon_label.configure(text="🌙", text_color="#ffaa2b")
-            self.msg_label.configure(text=f"Night Light by HT ON · {strength_pct}% Strength ({kelvin}K)")
+            self.msg_label.configure(text=f"Night Light ON · {strength_pct}% Strength ({kelvin}K)")
         else:
             self.card.configure(border_color="#3b82f6")
             self.icon_label.configure(text="☀️", text_color="#60a5fa")
-            self.msg_label.configure(text="Night Light by HT OFF · Daylight Restored")
+            self.msg_label.configure(text="Night Light OFF · Daylight Restored")
 
         # Position at bottom-right of active monitor work area
         pt = wintypes.POINT()

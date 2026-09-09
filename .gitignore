@@ -34,6 +34,9 @@ desktop.ini
 # Local knowledge-graph cache
 .codebase-memory/
 
+# Local audit evidence, build sandboxes, and release candidates
+audit/
+
 # Local HassTech portfolio memory wiring (contains workstation paths)
 AGENTS.md
 GEMINI.md

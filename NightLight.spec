@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files
-from PyInstaller.utils.hooks import collect_all
+
 
 project_dir = Path(SPECPATH)
 assets_dir = project_dir / "assets"
@@ -11,8 +11,6 @@ datas = [(str(assets_dir), "assets")]
 binaries = []
 hiddenimports = []
 datas += collect_data_files('customtkinter')
-tmp_ret = collect_all('pystray')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
@@ -40,7 +38,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
