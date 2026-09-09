@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Build outputs and generated helpers
+build/
+dist/
+*.exe
+*.dll
+*.pdb
+*.spec.bak
+
+# Local application and test state
+.test-state/
+*.log
+out.txt
+err.txt
+
+# IDE and operating system
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local knowledge-graph cache
+.codebase-memory/
+
+# Local HassTech portfolio memory wiring (contains workstation paths)
+AGENTS.md
+GEMINI.md

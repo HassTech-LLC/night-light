@@ -1,0 +1,51 @@
+[project]
+name = "night-light-by-ht"
+version = "0.1.0"
+description = "A compact, transparent Windows evening-light controller by HassTech."
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+license = "MIT"
+authors = [
+  { name = "HassTech" },
+]
+keywords = ["windows", "night-light", "circadian", "display", "accessibility"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Win32 (MS Windows)",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows :: Windows 11",
+  "Programming Language :: Python :: 3",
+  "Topic :: Desktop Environment",
+]
+dependencies = [
+  "customtkinter>=5.2,<6",
+  "Pillow>=10,<13",
+  "pystray>=0.19,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<10",
+  "pyinstaller>=6.10,<7",
+]
+
+[tool.setuptools]
+py-modules = [
+  "build",
+  "config_manager",
+  "create_shortcuts",
+  "display_status",
+  "hud_overlay",
+  "icons",
+  "main",
+  "nightlight_engine",
+  "tray_app",
+  "ui_flyout",
+  "windows_nightlight",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["."]
+python_files = ["test_*.py"]
+
