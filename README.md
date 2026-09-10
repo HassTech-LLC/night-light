@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/media/wordmark.svg" alt="Night Light by HT — a calmer evening" width="880" /></p>
+<p align="center"><img src="docs/media/wordmark.svg" alt="Night Light — a calmer evening, from HassTech" width="880" /></p>
 
 <p align="center">A free Windows companion for softer evening screens.<br />Gradual warmth. Optional dimming. Your pace.</p>
 
