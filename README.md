@@ -27,7 +27,7 @@ Use Manual for direct adjustments. Hold to compare original colors, pause Smart 
 
 ### Make it yours
 
-Choose light or dark appearance; Frosted, Liquid, Solid, or Ceramic surfaces; and individual presets for accent, panel, and background colors. Light and dark keep separate preferences. Liquid is a CSS treatment, not Apple's native Liquid Glass.
+The default dark appearance is Night Light's charcoal-and-amber signature, with a warm ceramic companion for light mode. You can still choose Frosted, Liquid, Solid, or Ceramic surfaces and individual presets for accent, panel, and background colors. Light and dark keep separate preferences. Liquid is a CSS treatment, not Apple's native Liquid Glass.
 
 <table>
 <tr><th>Smart Comfort</th><th>Appearance</th></tr>
