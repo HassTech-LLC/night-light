@@ -80,6 +80,12 @@ A warmer screen is not a biological light measurement. Room lighting, display br
 
 ## Free by choice
 
-Core controls stay free. Optional support funds development; it does not unlock essential features. [Support the project](https://hasstechapi.com/night-light/#support).
+<p align="center">
+  <a href="https://buymeacoffee.com/hasstech?utm_source=github&utm_medium=readme&utm_campaign=night_light&utm_content=animated_support_banner">
+    <img src="docs/media/support-night-light.gif" width="880" alt="Keep the nights calm. Keep the project free. Buy Night Light a coffee." />
+  </a>
+</p>
+
+Night Light stays free for everyone. Optional support helps fund development, Windows testing, accessibility work, and clear research explainers—it never unlocks essential features. [Buy Night Light a coffee](https://buymeacoffee.com/hasstech?utm_source=github&utm_medium=readme&utm_campaign=night_light&utm_content=support_copy) or [see exactly what support helps fund](https://hasstechapi.com/night-light/#support).
 
 MIT © 2026 HassTech. See [LICENSE](LICENSE).
