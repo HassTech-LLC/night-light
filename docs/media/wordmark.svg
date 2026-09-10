@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 280" role="img" aria-labelledby="title">
+<title id="title">Night Light by HT — a calmer evening</title>
+<rect width="960" height="280" rx="24" fill="#111318"/>
+<defs><mask id="moon"><rect width="960" height="280" fill="white"/><circle cx="163" cy="100" r="53" fill="black"/></mask></defs>
+<circle cx="135" cy="133" r="63" fill="#de901d" mask="url(#moon)"/>
+<text x="237" y="142" fill="#f4f1eb" font-family="Segoe UI,Arial,sans-serif" font-size="66" font-weight="600" letter-spacing="-2">Night Light</text>
+<text x="241" y="183" fill="#b7b8bd" font-family="Segoe UI,Arial,sans-serif" font-size="20" letter-spacing="3">A CALMER EVENING. BY HT.</text>
+<path d="M72 231H888" stroke="#34363c"/>
+</svg>

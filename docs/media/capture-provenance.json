@@ -1,0 +1,22 @@
+{
+  "description": "Unmodified application renderer, isolated Chromium capture with illustrative state. Not a recording of physical display output.",
+  "viewport": {
+    "width": 480,
+    "height": 820,
+    "scale": 2
+  },
+  "renderer_sha256": {
+    "index.html": "571a87134d589d1bb97f1f26d9d51ef494b0c8aa06dec01dab82cfc4c7750551",
+    "base.css": "fdafbede63c6f0916398685d4265139517dca89308e7afd1a8e4c743380a8211",
+    "appearance.css": "0850b34098c20c12c2d0f03d39fb2a890730976081a3b5fe3c74a7d7350d7562",
+    "appearance.js": "4b7b79966765e57029460556b9720795d07d95a3bf93d705f7da7d16eeb783b4",
+    "desktop.css": "54d60583eeb8a00e41d6b80736922b3d28dc39282a6bdde6b98f0ec0be7da925",
+    "desktop.js": "377384f554a3bd06abbf97f1c195776800b3d8790a1628b4b646c87fe4cfdca1",
+    "favicon.ico": "060ea95038e33689757255ce4f0df75092597fd98970ddf4be06c57ee0aa9916"
+  },
+  "images": [
+    "controls.png",
+    "smart.png",
+    "appearance.png"
+  ]
+}
