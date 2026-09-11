@@ -30,7 +30,7 @@ Unsupported Windows behavior MUST be isolated behind a narrow adapter and fail s
 
 - Windows 11 is the initial supported platform.
 - The public name is **Night Light by HT**; internal legacy identifiers may remain only when needed for upgrade compatibility.
-- Sunset is the default Smart Mode anchor. Optional or locally inferred sleep timing may move protection earlier, never silently later.
+- Sunset is the default convenience schedule. An explicitly chosen personal schedule is authoritative. Smart follows user-confirmed comfort limits; inferred routines cannot directly change the v2 schedule or display output. No new collection or expanded consent is implied by upgrading. A clearly labelled legacy adapter may retain previously consented behavior until the user chooses migration, without new data sources or extended retention.
 - Generated binaries, personal settings, test residue, precise location, and secrets are not committed.
 - An unsigned development bundle is not described as a production release.
 
@@ -47,5 +47,8 @@ Unsupported Windows behavior MUST be isolated behind a narrow adapter and fail s
 
 This constitution governs repository changes. Amendments require an explicit rationale, version increment, migration impact, and updates to the corresponding project-vault decision. Safety, truth, and privacy principles cannot be waived by a convenience feature.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-08
+### Amendment 1.1.0
 
+The approved Smart Comfort implementation separates convenience scheduling from health claims and gives explicit user preferences authority over inference. Existing users must choose migration before a materially different automatic schedule replaces their current one. The narrow legacy adapter exception preserves already-consented behavior without expanding collection. Neutral recovery, truthful status, isolated tests and privacy requirements are unchanged.
+
+**Version**: 1.1.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-09

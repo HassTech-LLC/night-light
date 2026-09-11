@@ -1,10 +1,11 @@
 [project]
 name = "night-light-by-ht"
-version = "0.1.0"
+version = "0.2.0"
 description = "A compact, transparent Windows evening-light controller by HassTech."
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE", "NOTICE"]
 authors = [
   { name = "HassTech" },
 ]
@@ -12,7 +13,6 @@ keywords = ["windows", "night-light", "circadian", "display", "accessibility"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Win32 (MS Windows)",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: Microsoft :: Windows :: Windows 11",
   "Programming Language :: Python :: 3",
   "Topic :: Desktop Environment",
@@ -20,6 +20,8 @@ classifiers = [
 dependencies = [
   "customtkinter>=5.2,<6",
   "Pillow>=10,<13",
+  "tzdata==2026.3",
+  "tzlocal==5.4.4",
 ]
 
 [project.optional-dependencies]
@@ -31,7 +33,12 @@ dev = [
 [tool.setuptools]
 py-modules = [
   "build",
+  "build_identity",
+  "build_installer",
+  "build_premium",
+  "premium_ui",
   "config_manager",
+  "config_paths",
   "create_shortcuts",
   "display_status",
   "hud_overlay",
@@ -39,8 +46,22 @@ py-modules = [
   "main",
   "nightlight_engine",
   "release",
+  "smart_mode",
+  "smart_time",
+  "smart_transition",
+  "smart_schedule",
+  "smart_state",
+  "smart_runtime",
+  "smart_store",
+  "smart_desktop",
+  "smart_migration",
+  "smart_migration_switch",
+  "private_config_files",
+  "smart_ui",
+  "smart_learning",
+  "smart_location",
+  "smart_windows",
   "tray_app",
-  "ui_flyout",
   "win32_tray",
   "windows_nightlight",
 ]
@@ -49,4 +70,6 @@ py-modules = [
 addopts = "-q"
 testpaths = ["."]
 python_files = ["test_*.py"]
-
+# Historical audit sandboxes contain older source/test copies. Keep them as
+# evidence, but never discover them as the current application's test suite.
+norecursedirs = ["audit", ".*", "build", "dist", "node_modules", "venv", "*.egg", "_darcs", "CVS", "{arch}"]

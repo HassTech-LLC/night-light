@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Night Light — an interactive design concept</title>
+  <style>
+    :root {
+      font-family: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-synthesis: none;
+      color: #302e29;
+      background: #f3f1ec;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 280px; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button, input, select, summary { -webkit-tap-highlight-color: transparent; }
+    button:disabled, input:disabled { cursor: not-allowed; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid #d39037; outline-offset: 4px;
+    }
+    .page { max-width: 1040px; margin: 0 auto; padding: 56px 40px 32px; }
+    .masthead { display: flex; align-items: center; gap: 10px; }
+    .wordmark { font-size: 12px; font-weight: 650; letter-spacing: .18em; }
+    .masthead-line { height: 1px; width: 42px; background: #c8c1b6; }
+    .concept-id { color: #716d65; font-size: 12px; }
+    .stage { display: grid; grid-template-columns: minmax(0,1fr) 376px; gap: 80px; align-items: center; padding: 54px 0 44px; }
+    .intro { align-self: start; padding-top: 54px; }
+    .eyebrow { margin: 0 0 18px; color: #8a602a; font-size: 11px; font-weight: 650; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { margin: 0; font-weight: 530; font-size: clamp(36px,4.5vw,54px); line-height: 1.1; letter-spacing: -.055em; }
+    .intro-copy { color: #706b62; max-width: 330px; font-size: 16px; line-height: 1.65; margin: 24px 0 36px; }
+    .concept-controls { border-top: 1px solid #d9d4cb; padding-top: 24px; max-width: 326px; }
+    .control-label { display: block; font-size: 12px; font-weight: 600; color: #625d54; margin-bottom: 10px; }
+    .theme-picker { display: inline-flex; padding: 4px; background: #e6e2d9; border-radius: 13px; gap: 2px; margin: 0 0 24px; border: 0; }
+    .theme-picker legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .theme-picker label { position: relative; display: block; cursor: pointer; }
+    .theme-picker input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .theme-picker span { display: grid; place-items: center; height: 44px; min-width: 86px; border-radius: 9px; color: #70695f; font-size: 13px; }
+    .theme-picker input:checked + span { background: #fcfaf6; color: #302e29; box-shadow: 0 1px 3px #3b302412; }
+    .theme-picker input:focus-visible + span { outline: 3px solid #9c681f; outline-offset: 2px; }
+    .scenario { width: 100%; min-height: 44px; padding: 10px 34px 10px 12px; background: #faf8f4; border: 1px solid #d7d1c6; border-radius: 10px; color: #514b42; font-size: 13px; }
+    .simulation-note { font-size: 12px; line-height: 1.6; color: #71695f; margin: 18px 0 0; }
+    .simulation-note strong { color: #4a443a; font-weight: 600; }
+    .flyout {
+      --surface: #242521; --text: #f2efe7; --muted: #aaa99e; --faint: #888b80;
+      --line: #3d3e37; --well: #1b1c19; --selected: #414239; --accent: #e6b16a;
+      --accent-text: #1e211a; --control: #34362f; --sample: #eae6dc;
+      color-scheme: dark; background: var(--surface); color: var(--text);
+      border: 1px solid #42443b; border-radius: 27px; padding: 17px 23px 9px;
+      box-shadow: 0 28px 60px -27px #35322260, 0 5px 15px -7px #322f2433;
+      position: relative; min-width: 0;
+    }
+    .flyout[data-theme="light"] {
+      --surface: #fdfbf6; --text: #2c3028; --muted: #6c7165; --faint: #797e72;
+      --line: #dfdfd3; --well: #efeee6; --selected: #fffefa; --accent: #a36523;
+      --accent-text: #fffaf1; --control: #e9e9df; --sample: #ede9e0;
+      color-scheme: light; border-color: #d4d6c9; box-shadow: 0 28px 60px -27px #68634a45, 0 5px 15px -7px #544f3220;
+    }
+    .app-header { display: flex; align-items: center; gap: 9px; min-height: 44px; }
+    .app-icon { color: var(--accent); height: 21px; width: 21px; flex: 0 0 auto; }
+    .app-title { font-size: 16px; font-weight: 620; letter-spacing: -.035em; }
+    .byline { font-size: 10px; font-weight: 550; margin-left: 3px; color: var(--faint); letter-spacing: .02em; }
+    .power-switch { width: 62px; min-height: 44px; margin-left: auto; padding: 8px 4px; border: 0; background: transparent; border-radius: 15px; }
+    .switch-track { display: block; position: relative; width: 50px; height: 29px; border-radius: 20px; background: #5e6156; transition: background 140ms var(--ease); }
+    .switch-knob { position: absolute; top: 3px; left: 3px; height: 23px; width: 23px; border-radius: 50%; background: #fbfaf4; box-shadow: 0 1px 3px #0003; transition: transform 140ms var(--ease); }
+    .power-switch[aria-checked="true"] .switch-track { background: var(--accent); }
+    .power-switch[aria-checked="true"] .switch-knob { transform: translateX(21px); }
+    .power-switch[aria-checked="true"] .switch-knob::after { content: ""; position: absolute; top: 8px; left: 8px; width: 7px; height: 4px; border-bottom: 1.5px solid #71522c; border-left: 1.5px solid #71522c; transform: rotate(-45deg); }
+    .status { padding: 8px 0 12px; }
+    .status-meta { display: flex; align-items: center; gap: 7px; color: var(--accent); font-size: 10px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 6px; }
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .status h2 { font-size: 25px; letter-spacing: -.045em; line-height: 1.2; font-weight: 570; margin: 0; }
+    .status-copy { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 6px 0 0; }
+    .mode-picker { border: 0; display: flex; gap: 4px; background: var(--well); padding: 3px; border-radius: 12px; margin: 0 0 13px; min-width: 0; }
+    .mode-picker legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .mode-picker label { position: relative; flex: 1; cursor: pointer; }
+    .mode-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .mode-picker span { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 550; transition: background 140ms var(--ease), color 140ms var(--ease); }
+    .mode-picker input:checked + span { background: var(--selected); color: var(--text); box-shadow: 0 1px 3px #0001; }
+    .mode-picker input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 1px; }
+    .small-icon { height: 14px; width: 14px; stroke-width: 1.6; }
+    .adjustment + .adjustment { margin-top: 2px; }
+    .range-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; }
+    .range-heading label { font-weight: 550; }
+    .range-heading output { color: var(--accent); font-size: 14px; font-weight: 580; font-variant-numeric: tabular-nums; }
+    .range { --fill: 54%; appearance: none; -webkit-appearance: none; display: block; width: 100%; height: 44px; margin: 1px 0 0; background: transparent; cursor: pointer; border-radius: 4px; }
+    .range::-webkit-slider-runnable-track { height: 3px; border-radius: 3px; background: linear-gradient(to right, var(--accent) 0 var(--fill), var(--line) var(--fill) 100%); }
+    .range::-moz-range-track { height: 3px; border-radius: 3px; background: var(--line); }
+    .range::-moz-range-progress { height: 3px; background: var(--accent); border-radius: 3px; }
+    .range::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 21px; height: 21px; margin-top: -9px; border-radius: 50%; background: var(--text); border: 0; box-shadow: 0 1px 5px #0003; }
+    .range::-moz-range-thumb { width: 21px; height: 21px; border-radius: 50%; background: var(--text); border: 0; box-shadow: 0 1px 5px #0003; }
+    .range:disabled { opacity: .4; }
+    .range-ends { display: none; }
+    .sample-row { margin-top: 2px; display: flex; align-items: center; gap: 12px; }
+    .screen-sample { position: relative; flex: 0 0 51px; height: 39px; overflow: hidden; border: 1px solid #8884; border-radius: 8px; display: grid; place-items: center; background: var(--sample); }
+    .sample-text { color: #45483f; font-size: 19px; font-weight: 550; letter-spacing: -.065em; }
+    .sample-tint { position: absolute; inset: 0; pointer-events: none; background: #e7a143; opacity: var(--tint, .16); }
+    .sample-dim { position: absolute; inset: 0; pointer-events: none; background: #000; opacity: var(--dim, .12); }
+    .compare { display: block; border: 0; padding: 0 5px; min-height: 44px; color: var(--muted); background: transparent; text-align: left; border-radius: 6px; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .compare-title { display: block; font-size: 14px; color: var(--text); font-weight: 550; }
+    .compare-sub { display: block; font-size: 10px; color: var(--faint); margin-top: 4px; }
+    .compare[aria-pressed="true"] .compare-title { color: var(--accent); }
+    .timeline { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+    .section-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .section-line h3 { margin: 0; font-size: 14px; font-weight: 580; }
+    .example-label { color: var(--faint); font-size: 10px; }
+    .timeline-track { position: relative; margin: 23px 5px 0; height: 2px; background: var(--line); }
+    .timeline-progress { position: absolute; inset: 0 auto 0 0; width: 13%; background: var(--accent); }
+    .timeline-now { position: absolute; top: -17px; left: 13%; transform: translateX(-50%); font-size: 9px; color: var(--accent); white-space: nowrap; }
+    .timeline-point { position: absolute; width: 6px; height: 6px; top: -2px; border-radius: 50%; background: var(--surface); border: 1px solid var(--faint); }
+    .timeline-point:first-of-type { left: -1px; }
+    .timeline-point.bedtime { left: 50%; }
+    .timeline-point.morning { right: -1px; }
+    .timeline-labels { display: flex; justify-content: space-between; padding-top: 8px; }
+    .timeline-label { color: var(--muted); font-size: 14px; width: 33.33%; }
+    .timeline-label:nth-child(2) { text-align: center; }
+    .timeline-label:last-child { text-align: right; }
+    .timeline-label strong { display: block; color: var(--text); font-size: 14px; font-weight: 550; margin-bottom: 3px; }
+    .timeline-caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .primary-action { width: 100%; min-height: 44px; margin-top: 13px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: var(--control); font-size: 14px; font-weight: 570; transition: background 140ms var(--ease), transform 140ms var(--ease); }
+    .primary-action:hover { background: var(--selected); }
+    .primary-action:active { transform: scale(.985); }
+    .primary-action.resume { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .primary-action:disabled { opacity: .45; }
+    .repair { margin: 14px 0 0; padding-left: 11px; border-left: 2px solid var(--accent); color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .repair strong { color: var(--text); font-weight: 550; }
+    .settings { margin-top: 0; }
+    .settings summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: 44px; color: var(--muted); cursor: pointer; font-size: 14px; border-radius: 6px; }
+    .settings summary::-webkit-details-marker { display: none; }
+    .settings summary::after { content: "+"; font-size: 17px; font-weight: 300; }
+    .settings[open] summary::after { content: "−"; }
+    .settings-body { border-top: 1px solid var(--line); padding: 19px 0 6px; }
+    .settings-title { font-size: 14px; font-weight: 550; margin: 0 0 12px; }
+    .time-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .time-fields label { font-size: 14px; color: var(--muted); }
+    .time-fields input { min-width: 0; width: 100%; height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--well); color: var(--text); padding: 8px; margin-top: 7px; font-size: 14px; }
+    .settings-note { font-size: 12px; line-height: 1.6; color: var(--faint); margin: 11px 0 17px; }
+    .preset-row { display: flex; gap: 6px; }
+    .preset { flex: 1; border: 1px solid var(--line); background: transparent; color: var(--text); border-radius: 9px; min-height: 48px; padding: 7px 3px; font-size: 14px; }
+    .preset span { display: block; color: var(--faint); font-size: 14px; margin-top: 3px; }
+    .preset:hover { background: var(--control); }
+    .neutral { display: block; width: 100%; min-height: 44px; border: 0; background: transparent; color: var(--accent); margin-top: 12px; font-size: 14px; border-radius: 6px; }
+    .footer { border-top: 1px solid #d9d4cb; padding-top: 18px; display: flex; justify-content: space-between; gap: 24px; color: #827b6f; font-size: 11px; line-height: 1.6; }
+    .footer p { margin: 0; }
+    .footer span { color: #4f4b40; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    [hidden] { display: none !important; }
+    @media (max-width: 850px) {
+      .page { padding: 30px 24px 24px; max-width: 620px; }
+      .stage { grid-template-columns: 1fr; gap: 30px; padding: 32px 0; }
+      .intro { padding-top: 0; }
+      h1 { font-size: 40px; }
+      .intro-copy { margin: 18px 0 24px; max-width: 420px; font-size: 14px; }
+      .concept-controls { max-width: none; display: grid; grid-template-columns: 1fr 1.35fr; gap: 0 18px; padding-top: 19px; }
+      .theme-field { grid-row: 1; }
+      .scenario-field { grid-row: 1; }
+      .theme-picker { margin: 0; }
+      .theme-picker span { min-width: 62px; }
+      .simulation-note { grid-column: 1 / -1; margin-top: 14px; }
+      .flyout { width: 100%; max-width: 376px; justify-self: center; }
+      .footer { flex-direction: column; gap: 6px; }
+    }
+    @media (max-width: 390px) {
+      .page { padding: 24px 12px 20px; }
+      .masthead { padding: 0 5px; }
+      .intro { padding: 0 5px; }
+      h1 { font-size: 35px; }
+      .flyout { padding: 17px 20px 9px; border-radius: 24px; }
+      .concept-controls { grid-template-columns: 1fr; gap: 18px; }
+      .scenario-field { grid-row: 2; }
+      .simulation-note { margin-top: 0; }
+      .status h2 { font-size: 25px; }
+      .status { min-height: 0; }
+      .footer { margin: 0 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+    }
+    @media (forced-colors: active) {
+      .flyout, .theme-picker, .mode-picker, .primary-action, .screen-sample, .scenario, .preset, .time-fields input { border: 1px solid CanvasText; box-shadow: none; }
+      .mode-picker input:checked + span, .theme-picker input:checked + span { outline: 2px solid Highlight; outline-offset: -3px; }
+      .switch-track { border: 1px solid ButtonText; }
+      .switch-knob { background: ButtonText; forced-color-adjust: none; }
+      .power-switch[aria-checked="true"] .switch-track { background: Highlight; forced-color-adjust: none; }
+      .range { appearance: auto; -webkit-appearance: auto; }
+      .range::-webkit-slider-runnable-track { background: ButtonText; }
+      .range::-webkit-slider-thumb { background: Highlight; border: 1px solid ButtonText; }
+      .sample-tint, .sample-dim { display: none; }
+      .timeline-track, .timeline-progress, .status-dot { background: CanvasText; }
+      .status-meta, .range-heading output, .neutral { color: CanvasText; }
+    }
+    /* Material study: CSS approximation, not Apple's native renderer. */
+    .material-field { grid-column: 1 / -1; margin-bottom: 20px; }
+    .material-picker { display: flex; width: 100%; margin-bottom: 0; }
+    .material-picker label { flex: 1; }
+    .material-picker span { min-width: 0; padding: 0 9px; }
+    .material-description { font-size: 13px; line-height: 1.5; color: #625d54; margin: 10px 0 0; }
+    .material-stage { position: relative; isolation: isolate; width: 100%; max-width: 376px; justify-self: center; }
+    .material-stage::before { content: ""; position: absolute; inset: -20px; z-index: -1; border-radius: 45px;
+      background: radial-gradient(ellipse at 8% 18%, #efb876 0%, transparent 47%),
+        radial-gradient(ellipse at 96% 90%, #516e83 0%, transparent 55%),
+        repeating-linear-gradient(140deg, transparent 0 105px, #fff3 106px 108px, transparent 110px 210px),
+        linear-gradient(155deg, #758b9e, #beafc0 45%, #876954 75%, #303f58);
+      box-shadow: inset 0 0 55px #fff2; opacity: 1; transition: opacity 180ms var(--ease); }
+    body[data-material="solid"] .material-stage::before { opacity: 0; }
+    body:not([data-material="solid"]) .flyout { --muted: #dedfe4; --faint: #c6cad3; --line: #ffffff30;
+      --well: #10192368; --selected: #ffffff26; --control: #ffffff17; --accent: #ffd296;
+      background: linear-gradient(135deg,#ffffff14,transparent 40%), #18202b99;
+      border-color: #ffffff68; backdrop-filter: blur(22px) saturate(135%); -webkit-backdrop-filter: blur(22px) saturate(135%);
+      box-shadow: inset 0 1px 0 #ffffff80, inset 1px 0 0 #ffffff25, inset 0 -1px 0 #ffffff25, 0 22px 50px -18px #10182a70; }
+    body:not([data-material="solid"]) .flyout[data-theme="light"] { --text: #202a32; --muted: #3d4a53; --faint: #4d5a65;
+      --line: #1c344d26; --well: #f7fbff45; --selected: #ffffffbe; --control: #ffffffe0; --accent: #7d440d;
+      background: linear-gradient(135deg,#ffffff80,transparent 45%), #f3f8ff80;
+      border-color: #ffffffd0; box-shadow: inset 0 1px 0 #fff, inset 1px 0 0 #ffffff80, inset 0 -1px 0 #ffffff70, 0 22px 50px -18px #27344965; }
+    body[data-material="frosted"] .flyout { background: #202936eb; backdrop-filter: blur(36px) saturate(115%); -webkit-backdrop-filter: blur(36px) saturate(115%); }
+    body[data-material="frosted"] .flyout[data-theme="light"] { background: #f3f6f7e8; }
+    body:not([data-material="solid"]) .mode-picker { border: 1px solid #ffffff20; padding: 2px; }
+    body:not([data-material="solid"]) .mode-picker input:checked + span { box-shadow: inset 0 1px 0 #ffffff50, 0 2px 5px #14223815; }
+    body:not([data-material="solid"]) .range::-webkit-slider-thumb { background: #fff; border: 1px solid #ffffffc0; box-shadow: inset 0 -2px 3px #e5edff88, 0 2px 5px #17284240; }
+    body:not([data-material="solid"]) .range::-moz-range-thumb { background: #fff; border: 1px solid #ffffffc0; }
+    @media(max-width:390px) { .material-stage::before { inset: -8px; } }
+    @media(prefers-reduced-transparency:reduce) {
+      body:not([data-material="solid"]) .flyout { background: #202936; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      body:not([data-material="solid"]) .flyout[data-theme="light"] { background: #f3f6f7; }
+    }
+    @supports not (backdrop-filter:blur(1px)) {
+      body:not([data-material="solid"]) .flyout { background: #202936; }
+      body:not([data-material="solid"]) .flyout[data-theme="light"] { background: #f3f6f7; }
+    }
+    @media(forced-colors:active) {
+      .material-stage::before { display:none; }
+      body:not([data-material="solid"]) .flyout,
+      body:not([data-material="solid"]) .flyout[data-theme="light"] { background:Canvas; color:CanvasText; border:1px solid CanvasText; box-shadow:none; backdrop-filter:none; --text:CanvasText; --muted:CanvasText; --faint:CanvasText; --line:CanvasText; --well:Canvas; --control:ButtonFace; --selected:Canvas; --accent:LinkText; }
+      body:not([data-material="solid"]) .range::-webkit-slider-thumb { background:Highlight; border:1px solid ButtonText; box-shadow:none; }
+    }
+  </style>
+  <link rel="stylesheet" href="appearance.css">
+</head>
+<body data-material="liquid">
+  <main class="page">
+    <header class="masthead" aria-label="Night Light design concept">
+      <span class="wordmark">NIGHT LIGHT</span><span class="masthead-line" aria-hidden="true"></span><span class="concept-id">Concept 01 / by HT</span>
+    </header>
+    <div class="stage">
+      <section class="intro" aria-labelledby="concept-title">
+        <p class="eyebrow">A little less light. A little more calm.</p>
+        <h1 id="concept-title">A quieter screen.<br>Right on time.</h1>
+        <p class="intro-copy">One thoughtful control for the end of your day. Warmth, dimming, and a schedule that knows when to step back.</p>
+        <div class="concept-controls">
+          <div class="theme-field">
+            <span class="control-label" aria-hidden="true">Appearance</span>
+            <fieldset class="theme-picker">
+              <legend>Concept appearance</legend>
+              <label><input type="radio" name="theme" value="dark" checked><span>Dark</span></label>
+              <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+            </fieldset>
+          </div>
+          <details class="appearance-drawer">
+            <summary>Appearance &amp; presets</summary>
+          <div class="material-field">
+            <span class="control-label" aria-hidden="true">Surface style</span>
+            <fieldset class="theme-picker material-picker">
+              <legend>Surface style</legend>
+              <label><input type="radio" name="material" value="frosted"><span>Frosted</span></label>
+              <label><input type="radio" name="material" value="liquid" checked><span>Liquid</span></label>
+              <label><input type="radio" name="material" value="solid"><span>Solid</span></label>
+              <label><input type="radio" name="material" value="ceramic"><span>Ceramic</span></label>
+            </fieldset>
+            <p class="material-description" id="material-description" aria-live="polite">Liquid: luminous edges and a translucent surface over a sample wallpaper. A CSS interpretation of glass.</p>
+          </div>
+          <section class="palette-field" aria-labelledby="palette-title">
+            <h2 class="control-label" id="palette-title">Colors for dark mode</h2>
+            <p class="material-description">Each preset pairs accent, panel, and page background colors. Your surface style stays unchanged.</p>
+            <div class="palette-grid" role="group" aria-label="Saved color presets"></div>
+            <details class="custom-colors">
+              <summary>Customize colors</summary>
+              <div class="color-editors">
+                <div class="color-option"><label for="accent-color">Accent<input id="accent-color" type="color" value="#e6b16a"></label><div class="individual-presets" id="accent-presets" role="group" aria-label="Accent color presets"></div></div>
+                <div class="color-option"><label for="surface-color">Panel<input id="surface-color" type="color" value="#242521"></label><div class="individual-presets" id="surface-presets" role="group" aria-label="Panel color presets"></div></div>
+                <div class="color-option"><label for="background-color">Page background<input id="background-color" type="color" value="#f3f1ec"></label><div class="individual-presets" id="background-presets" role="group" aria-label="Page background color presets"></div></div>
+              </div>
+              <p class="material-description">Text adapts for readability. Accent shades may be adjusted for contrast.</p>
+              <button class="appearance-reset" id="reset-appearance" type="button">Reset this mode</button>
+            </details>
+            <label class="motion-option"><input id="gentle-motion" type="checkbox" checked> Gentle motion</label>
+            <p class="material-description" id="appearance-save" role="status">Appearance is saved on this browser, separately for light and dark.</p>
+          </section>
+          </details>
+          <div class="scenario-field">
+            <label for="scenario" class="control-label">Demo scenario</label>
+            <select id="scenario" class="scenario">
+              <option value="normal">An ordinary evening</option>
+              <option value="conflict">Windows Night Light is on</option>
+            </select>
+          </div>
+          <p class="simulation-note"><strong>Interactive design concept.</strong> Appearance choices are saved locally. Filter controls affect only the small sample; your screen settings stay untouched. Times are examples for September 9, 2026, at 8:45 PM. No location is collected.</p>
+        </div>
+      </section>
+
+      <div class="material-stage">
+      <section class="flyout" data-theme="dark" aria-labelledby="app-title">
+        <div class="app-header">
+          <svg class="app-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19.8 14.5A8.6 8.6 0 0 1 9.5 4.2a8.4 8.4 0 1 0 10.3 10.3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span class="app-title" id="app-title">Night Light <span class="byline">by HT</span></span>
+          <button class="power-switch" id="power" type="button" role="switch" aria-checked="true" aria-label="Screen filter enabled"><span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span></button>
+        </div>
+
+        <div class="status" aria-live="polite" aria-atomic="true">
+          <p class="status-meta"><span class="status-dot" aria-hidden="true"></span><span id="status-meta">Smart · active</span></p>
+          <h2 id="status-title">Winding down</h2>
+          <p class="status-copy" id="status-copy">Warmth follows tonight’s schedule.</p>
+        </div>
+
+        <fieldset class="mode-picker">
+          <legend>Filter mode</legend>
+          <label><input type="radio" name="mode" value="smart" checked><span><svg class="small-icon" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="m9 2 1.8 5.2L16 9l-5.2 1.8L9 16l-1.8-5.2L2 9l5.2-1.8L9 2Z" stroke="currentColor" stroke-linejoin="round"/></svg>Smart</span></label>
+          <label><input type="radio" name="mode" value="manual"><span>Manual</span></label>
+        </fieldset>
+
+        <div class="adjustment">
+          <div class="range-heading"><label for="warmth">Warmth</label><output id="warmth-value" for="warmth">4,200 K</output></div>
+          <input class="range" id="warmth" type="range" min="0" max="82" value="46" step="1" aria-describedby="warmth-help" aria-valuetext="4,200 kelvin">
+          <div class="range-ends" aria-hidden="true"><span>Neutral</span><span>Warmer</span></div>
+          <span class="sr-only" id="warmth-help">Higher warmth reduces the color temperature. A change in Smart mode lasts 60 minutes, until 9:45 PM in this example.</span>
+        </div>
+        <div class="adjustment">
+          <div class="range-heading"><label for="dimming">Dim screen</label><output id="dimming-value" for="dimming">12%</output></div>
+          <input class="range" id="dimming" type="range" min="0" max="40" value="12" step="1" aria-describedby="dimming-help" aria-valuetext="12 percent dimming">
+          <div class="range-ends" aria-hidden="true"><span>Original brightness</span><span>40% dimmer</span></div>
+          <span class="sr-only" id="dimming-help">Zero preserves brightness. Forty percent is the maximum dimming in this concept. Only the small sample is affected.</span>
+        </div>
+
+        <div class="sample-row">
+          <div class="screen-sample" id="sample" role="img" aria-label="Illustrative screen sample, warm and dimmed"><span class="sample-text" aria-hidden="true">Aa</span><span class="sample-tint" aria-hidden="true"></span><span class="sample-dim" aria-hidden="true"></span></div>
+          <button class="compare" id="compare" type="button" aria-pressed="false" aria-describedby="compare-help"><span class="compare-title" id="compare-title">Hold to see original</span><span class="compare-sub">Color sample only</span></button>
+          <span class="sr-only" id="compare-help">Press and hold with a pointer, Space, or Enter to show the original sample. Release to restore the filtered sample.</span>
+        </div>
+
+        <section class="timeline" id="timeline" aria-labelledby="tonight-title">
+          <div class="section-line"><h3 id="tonight-title">Tonight</h3><span class="example-label">Example schedule</span></div>
+          <div class="timeline-track" aria-hidden="true"><div class="timeline-progress"></div><span class="timeline-now">8:45 PM</span><i class="timeline-point"></i><i class="timeline-point bedtime"></i><i class="timeline-point morning"></i></div>
+          <div class="timeline-labels">
+            <div class="timeline-label"><strong id="start-label">7:18 PM</strong><span>Warm up</span></div>
+            <div class="timeline-label"><strong>11:00 PM</strong><span>Late evening</span></div>
+            <div class="timeline-label"><strong id="end-label">6:34 AM</strong><span>Neutral</span></div>
+          </div>
+          <p class="timeline-caption" id="timeline-caption">A gentle start, a warmer evening, original colors by morning.</p>
+        </section>
+
+        <p class="repair" id="repair" hidden><strong>Windows is already warming your display.</strong> To use Night Light by HT, turn Windows Night Light off in Settings → System → Display. Change the demo scenario back to “An ordinary evening” to simulate that step.</p>
+        <button class="primary-action" id="pause" type="button">Pause 1 hour</button>
+
+        <details class="settings">
+          <summary>Schedule &amp; preferences</summary>
+          <div class="settings-body">
+            <p class="settings-title">Example schedule</p>
+            <div class="time-fields">
+              <label for="start-time">Warm up at<input id="start-time" type="time" value="19:18" required></label>
+              <label for="end-time">Return to neutral<input id="end-time" type="time" value="06:34" required></label>
+            </div>
+            <p class="settings-note">These example times can be edited. The page keeps them for this session only; it does not run a real clock or background schedule. Timeline spacing illustrates phases, not elapsed time.</p>
+            <p class="settings-title">Try a warmth</p>
+            <div class="preset-row">
+              <button class="preset" type="button" data-kelvin="5000">Soft<span>5,000 K</span></button>
+              <button class="preset" type="button" data-kelvin="4200">Warm<span>4,200 K</span></button>
+              <button class="preset" type="button" data-kelvin="3200">Deep<span>3,200 K</span></button>
+            </div>
+            <button class="neutral" id="neutral" type="button">Reset to neutral · switches to Manual</button>
+          </div>
+        </details>
+      </section>
+      </div>
+    </div>
+    <footer class="footer"><p><span>Designed to stay out of the way.</span><br>A compact Windows flyout with a softer, more considered rhythm.</p><p>Keyboard friendly · Reduced motion aware<br>Local concept · No network requests</p></footer>
+    <p class="sr-only" id="announcer" role="status" aria-live="polite"></p>
+  </main>
+
+  <script>
+    "use strict";
+    const $ = (selector) => document.querySelector(selector);
+    const state = { mode: "smart", power: true, paused: false, override: false, conflict: false, preview: false, warmth: 46, dim: 12, start: "19:18", end: "06:34" };
+    const scheduled = { warmth: 46, dim: 12 };
+    const ui = {
+      app: $(".flyout"), power: $("#power"), meta: $("#status-meta"), title: $("#status-title"), copy: $("#status-copy"),
+      warmth: $("#warmth"), warmthValue: $("#warmth-value"), dim: $("#dimming"), dimValue: $("#dimming-value"),
+      sample: $("#sample"), compare: $("#compare"), compareTitle: $("#compare-title"), timeline: $("#timeline"),
+      caption: $("#timeline-caption"), pause: $("#pause"), repair: $("#repair"), announcer: $("#announcer")
+    };
+    function formatTime(value) {
+      const [hour, minute] = value.split(":").map(Number);
+      return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
+    }
+    function kelvin() { return 6500 - state.warmth * 50; }
+    function announce(message) { ui.announcer.textContent = message; }
+    function renderSample() {
+      const active = state.power && !state.paused && !state.conflict && !state.preview;
+      ui.sample.style.setProperty("--tint", active ? String(state.warmth / 240) : "0");
+      ui.sample.style.setProperty("--dim", active ? String(state.dim / 100) : "0");
+      ui.sample.setAttribute("aria-label", active && (state.warmth || state.dim) ? `Illustrative screen sample, ${kelvin()} kelvin and ${state.dim} percent dimmed` : "Illustrative screen sample, original colors and brightness");
+      ui.compare.setAttribute("aria-pressed", String(state.preview));
+      ui.compareTitle.textContent = state.preview ? "Original colors" : "Hold to see original";
+    }
+    function render() {
+      let meta, title, copy;
+      const neutral = state.warmth === 0 && state.dim === 0;
+      if (!state.power) {
+        meta = `${state.mode} · off`; title = "Resting for now"; copy = "Original colors. Turn on whenever you’re ready.";
+      } else if (state.conflict) {
+        meta = "Filter paused · Windows conflict"; title = "Windows has the light"; copy = "Your filter is enabled, but paused while Windows Night Light is on.";
+      } else if (state.paused) {
+        meta = `${state.mode} · paused`; title = "Taking a break"; copy = `${state.mode === "smart" ? "Smart" : "Your filter"} resumes at 9:45 PM in this example.`;
+      } else if (state.mode === "smart" && state.override) {
+        meta = "Smart · 60-minute adjustment"; title = "Your evening, adjusted"; copy = "Smart resumes at 9:45 PM, or whenever you’re ready.";
+      } else if (state.mode === "smart") {
+        meta = "Smart · active"; title = "Winding down"; copy = "Warmth follows tonight’s schedule.";
+      } else {
+        meta = "Manual · active"; title = neutral ? "Original colors" : "Just how you like it"; copy = neutral ? "Warmth and dimming are at neutral." : "Your warmth and dimming stay where you set them.";
+      }
+      ui.meta.textContent = meta;
+      ui.title.textContent = title;
+      ui.copy.textContent = copy;
+      ui.power.setAttribute("aria-checked", String(state.power));
+      document.querySelectorAll('input[name="mode"]').forEach((input) => { input.checked = input.value === state.mode; });
+      ui.warmth.value = state.warmth;
+      ui.dim.value = state.dim;
+      ui.warmthValue.value = `${kelvin().toLocaleString("en-US")} K`;
+      ui.dimValue.value = `${state.dim}%`;
+      ui.warmth.setAttribute("aria-valuetext", `${kelvin()} kelvin${state.warmth === 0 ? ", neutral" : ""}`);
+      ui.dim.setAttribute("aria-valuetext", `${state.dim} percent dimming`);
+      ui.warmth.style.setProperty("--fill", `${state.warmth / 82 * 100}%`);
+      ui.dim.style.setProperty("--fill", `${state.dim / 40 * 100}%`);
+      const disabled = !state.power || state.paused || state.conflict;
+      ui.warmth.disabled = disabled;
+      ui.dim.disabled = disabled;
+      document.querySelectorAll(".preset").forEach((button) => { button.disabled = disabled; });
+      ui.timeline.hidden = state.mode !== "smart";
+      ui.repair.hidden = !state.conflict || !state.power;
+      $("#start-label").textContent = formatTime(state.start);
+      $("#end-label").textContent = formatTime(state.end);
+      ui.caption.textContent = state.override ? "Personal adjustment active for 60 minutes. The schedule resumes at 9:45 PM in this example." : "A gentle start, a warmer evening, original colors by morning.";
+      const resume = state.paused || (state.mode === "smart" && state.override);
+      ui.pause.textContent = resume ? (state.mode === "smart" ? "Resume Smart" : "Resume filter") : "Pause 1 hour";
+      ui.pause.classList.toggle("resume", resume);
+      ui.pause.disabled = !state.power || state.conflict;
+      renderSample();
+    }
+    function setPreview(value) {
+      state.preview = value;
+      renderSample();
+    }
+    function changeAdjustment(key, value) {
+      state[key] = value;
+      if (state.mode === "smart") state.override = true;
+      render();
+    }
+    ui.power.addEventListener("click", () => {
+      state.power = !state.power;
+      state.paused = false;
+      setPreview(false);
+      render();
+    });
+    document.querySelectorAll('input[name="mode"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        state.mode = input.value;
+        state.paused = false;
+        state.override = false;
+        if (state.mode === "smart") Object.assign(state, scheduled);
+        setPreview(false);
+        render();
+      });
+    });
+    ui.warmth.addEventListener("input", (event) => changeAdjustment("warmth", Number(event.target.value)));
+    ui.dim.addEventListener("input", (event) => changeAdjustment("dim", Number(event.target.value)));
+    ui.pause.addEventListener("click", () => {
+      if (state.paused || (state.mode === "smart" && state.override)) {
+        state.paused = false;
+        if (state.mode === "smart") { state.override = false; Object.assign(state, scheduled); }
+      } else state.paused = true;
+      setPreview(false);
+      render();
+    });
+    $("#neutral").addEventListener("click", () => {
+      Object.assign(state, { mode: "manual", power: true, paused: false, override: false, warmth: 0, dim: 0, preview: false });
+      render();
+      announce("Switched to Manual with neutral colors and no dimming.");
+    });
+    document.querySelectorAll(".preset").forEach((button) => {
+      button.addEventListener("click", () => {
+        changeAdjustment("warmth", (6500 - Number(button.dataset.kelvin)) / 50);
+        announce(`${button.textContent.trim()} selected${state.mode === "smart" ? "; personal adjustment for 60 minutes, until 9:45 PM" : ""}.`);
+      });
+    });
+    $("#scenario").addEventListener("change", (event) => {
+      state.conflict = event.target.value === "conflict";
+      setPreview(false);
+      render();
+    });
+    [["#start-time", "start"], ["#end-time", "end"]].forEach(([selector, key]) => {
+      $(selector).addEventListener("change", (event) => {
+        if (!event.target.value) { event.target.value = state[key]; return; }
+        state[key] = event.target.value;
+        render();
+        announce(`Example ${key === "start" ? "warm-up" : "neutral"} time changed to ${formatTime(state[key])}.`);
+      });
+    });
+    ui.compare.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      ui.compare.focus({ preventScroll: true });
+      ui.compare.setPointerCapture(event.pointerId);
+      setPreview(true);
+    });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
+      ui.compare.addEventListener(type, () => setPreview(false));
+    });
+    ui.compare.addEventListener("keydown", (event) => {
+      if (event.key === " " || event.key === "Enter") { event.preventDefault(); setPreview(true); }
+      if (event.key === "Escape") setPreview(false);
+    });
+    ui.compare.addEventListener("keyup", (event) => {
+      if (event.key === " " || event.key === "Enter") { event.preventDefault(); setPreview(false); }
+    });
+    ui.compare.addEventListener("contextmenu", (event) => event.preventDefault());
+    ui.compare.addEventListener("blur", () => setPreview(false));
+    window.addEventListener("blur", () => setPreview(false));
+    document.addEventListener("visibilitychange", () => { if (document.hidden) setPreview(false); });
+    render();
+  </script>
+  <script src="appearance.js"></script>
+</body>
+</html>

@@ -24,6 +24,10 @@ def command_from_args(args):
         return "SHOW"
     if "--toggle" in args:
         return "TOGGLE"
+    if "--pause-smart" in args:
+        return "PAUSE_SMART"
+    if "--resume-smart" in args:
+        return "RESUME_SMART"
     if "--preset" in args:
         try:
             return f"PRESET {args[args.index('--preset') + 1]}"
@@ -37,11 +41,15 @@ def command_from_args(args):
         return f"STRENGTH {max(0, min(100, strength))}"
     if "--windows-off" in args:
         return "WINDOWS_OFF"
-    return "TOGGLE"
+    return "SHOW"
 
 
 def main():
     args = sys.argv[1:]
+    if '--request-exit' in args:
+        if args!=['--request-exit']:raise SystemExit(2)
+        from ipc_transport import request_resident_exit
+        raise SystemExit(0 if request_resident_exit() else 2)
     command = command_from_args(args)
     if command == "SHORTCUT":
         create_all_shortcuts()
@@ -80,6 +88,8 @@ def main():
             pass
     elif command == "WINDOWS_OFF":
         app.root.after(150, app.turn_windows_nightlight_off)
+    elif command in ("PAUSE_SMART", "RESUME_SMART"):
+        app.root.after(150, lambda: app.taskbar_smart(command == "PAUSE_SMART"))
     elif command == "TOGGLE":
         app.root.after(150, lambda: app.toggle_nightlight(show_hud=True))
 

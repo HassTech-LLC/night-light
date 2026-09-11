@@ -1,13 +1,20 @@
 Night Light — Third-Party Notices
 =================================
 
-This file applies to the Windows distribution of Night Light 0.1.0 built with
+This file applies to the Windows distribution of Night Light 0.2.0 built with
 CPython 3.14.7 from astral-sh/python-build-standalone release 20260901. The
-application's own copyright and MIT license remain in LICENSE and are not
+application's own copyright and PolyForm Noncommercial license remain in LICENSE and are not
 replaced or modified by this notice.
 
 Shipped application and runtime components
 ------------------------------------------
+
+* Microsoft.Web.WebView2 SDK 1.0.4191.47: embedded WinForms/Core managed
+  assemblies and x64 WebView2Loader. See THIRD-PARTY-LICENSES/WebView2-LICENSE.txt.
+  The Microsoft Edge WebView2 Evergreen Runtime is a separately installed
+  system dependency; it is not redistributed in this package. Premium UI
+  sources and the pinned SDK SHA-256 are recorded by build_premium.py and
+  embedded assets/premium/ORIGINS.json.
 
 * CPython 3.14.7 — Python Software Foundation License Version 2 and historical
   Python licenses. See THIRD-PARTY-LICENSES/CPython-3.14.7-LICENSE.txt and the
@@ -73,3 +80,12 @@ versions remain in uv.lock and the build-input/SBOM evidence. GitHub Actions
 used by CI are pinned to immutable commits in .github/workflows/ci.yml.
 
 No pystray or six code is included in this distribution.
+
+Smart Comfort timezone dependencies
+----------------------------------
+* tzdata 2026.3 — Python timezone-data distribution, Apache-2.0; its included
+  timezone database license notice is also retained. See tzdata-2026.3-LICENSE.txt
+  and tzdata-2026.3-APACHE.txt. Data is packaged for offline Windows operation.
+* tzlocal 5.4.4 — MIT. Windows-to-IANA local timezone mapping; see
+  tzlocal-5.4.4-LICENSE.txt. Resolving timezone does not relocate saved coordinates.
+  Exact wheel hashes are pinned in requirements-timezones.txt and uv.lock.

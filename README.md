@@ -88,4 +88,8 @@ A warmer screen is not a biological light measurement. Room lighting, display br
 
 Night Light stays free for everyone. Optional support helps fund development, Windows testing, accessibility work, and clear research explainers—it never unlocks essential features. [Buy Night Light a coffee](https://buymeacoffee.com/hasstech?utm_source=github&utm_medium=readme&utm_campaign=night_light&utm_content=support_copy) or [see exactly what support helps fund](https://hasstechapi.com/night-light/#support).
 
-MIT © 2026 HassTech. See [LICENSE](LICENSE).
+## License
+
+Night Light is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). You may use, study, modify, and redistribute the software for noncommercial purposes. Commercial use—including resale, paid redistribution, or bundling it into a product or service sold for money—requires separate written permission from HassTech.
+
+This is a noncommercial source-available license, not an OSI-approved open-source license. See [NOTICE](NOTICE) for the required copyright notice. Third-party components keep their own licenses as listed in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).

@@ -38,8 +38,7 @@ namespace NightLightWpfJumpList
                 ? Path.GetFullPath(args[0])
                 : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "NightLight.exe");
             string windowsState = args != null && args.Length > 1 ? args[1].ToUpperInvariant() : "UNKNOWN";
-            string hassState = args != null && args.Length > 2 ? args[2].ToUpperInvariant() : "UNKNOWN";
-            string strength = args != null && args.Length > 3 ? args[3] : "0";
+            string smartState = args != null && args.Length > 2 ? args[2].ToUpperInvariant() : "OFF";
 
             try
             {
@@ -54,19 +53,20 @@ namespace NightLightWpfJumpList
                 var app = new Application();
                 var jumpList = new JumpList();
 
-                AddTask(jumpList, exePath, (windowsState == "UNKNOWN" ? "? " : "✓ ") + "Windows Night Light: " + windowsState, "--show", "Detected Windows Night Light state");
-                AddTask(jumpList, exePath, "✓ Night Light: " + hassState, "--show", "Current Night Light filter state");
-                AddTask(jumpList, exePath, "Adjust Night Light Warmth...", "--show", "Open the Night Light warmth slider");
-                AddTask(jumpList, exePath, (strength == "25" ? "✓ " : "") + "Night Light: 25% (Soft)", "--strength 25", "Set Night Light warmth to 25%");
-                AddTask(jumpList, exePath, (strength == "50" ? "✓ " : "") + "Night Light: 50% (Balanced)", "--strength 50", "Set Night Light warmth to 50%");
-                AddTask(jumpList, exePath, (strength == "75" ? "✓ " : "") + "Night Light: 75% (Warm)", "--strength 75", "Set Night Light warmth to 75%");
-                AddTask(jumpList, exePath, (strength == "100" ? "✓ " : "") + "Night Light: 100% (Maximum)", "--strength 100", "Set Night Light warmth to 100%");
+                AddTask(jumpList, exePath, "Open Night Light", "--show", "Open controls, schedule and appearance");
+                if (smartState == "ACTIVE")
+                    AddTask(jumpList, exePath, "Pause Smart for 1 hour", "--pause-smart", "Restore original colors for one hour, then resume your schedule");
+                else if (smartState == "PAUSED")
+                    AddTask(jumpList, exePath, "Resume Smart", "--resume-smart", "End the temporary override and follow your schedule");
+                AddTask(jumpList, exePath, "Warmth: Soft (25%)", "--strength 25", "Set warmth to 25%; temporarily overrides Smart for one hour");
+                AddTask(jumpList, exePath, "Warmth: Medium (50%)", "--strength 50", "Set warmth to 50%; temporarily overrides Smart for one hour");
+                AddTask(jumpList, exePath, "Warmth: Warm (75%)", "--strength 75", "Set warmth to 75%; temporarily overrides Smart for one hour");
+                AddTask(jumpList, exePath, "Warmth: Maximum (100%)", "--strength 100", "Set warmth to 100%; temporarily overrides Smart for one hour");
                 if (windowsState == "ON")
                 {
                     AddTask(jumpList, exePath, "Turn Windows Night Light Off", "--windows-off", "One-way action: this app never turns Windows Night Light on");
                 }
-                AddTask(jumpList, exePath, "Toggle Night Light", "--toggle", "Turn only the Night Light filter on or off");
-                AddTask(jumpList, exePath, "Turn Night Light Off", "--strength 0", "Turn only the Night Light filter off");
+                AddTask(jumpList, exePath, "Turn filter off", "--strength 0", "Restore original colors and stop Smart until you enable it again");
 
                 JumpList.SetJumpList(app, jumpList);
                 jumpList.Apply();
@@ -76,6 +76,7 @@ namespace NightLightWpfJumpList
             catch (Exception ex)
             {
                 Console.WriteLine("ERROR: " + ex);
+                Environment.ExitCode = 1;
             }
         }
     }

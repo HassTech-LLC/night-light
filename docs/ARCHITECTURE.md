@@ -8,7 +8,7 @@ Night Light by HT is a Windows-only Python desktop application packaged with PyI
 main.py
   -> single-instance command dispatch
   -> TrayApp
-       -> ModernFlyout
+       -> PremiumFlyout
        -> NightLightEngine
        -> Windows Night Light detector
        -> effective display-status model
@@ -20,7 +20,7 @@ main.py
 
 - `nightlight_engine.py` owns the Windows Magnification API color matrix and interpolation.
 - `tray_app.py` coordinates state, tray input, Jump List refresh, and local command dispatch.
-- `ui_flyout.py` renders the compact user controls.
+- `premium_ui.py` hosts the premium control surface and its private desktop bridge.
 - `config_manager.py` persists settings under the user's roaming application-data folder and manages autostart.
 - `windows_nightlight.py` reads the current native state. Windows exposes no supported public desktop toggle API, so this detector is explicitly best-effort.
 - `display_status.py` derives honest visible states without touching Windows APIs.

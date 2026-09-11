@@ -1,0 +1,12 @@
+{
+  "config_revision": 4,
+  "enabled": false,
+  "smart_enabled": false,
+  "temperature_k": 3500,
+  "brightness": 0.8,
+  "smart_learning": false,
+  "smart_quiet_hours": {"start": "21:30", "end": "07:15"},
+  "autostart": false,
+  "theme": {"light": {"background": "#F3F5F8"}, "dark": {"background": "#101722"}},
+  "ipc_token": "REDACTED-FIXTURE-ONLY-NOT-A-REAL-CREDENTIAL"
+}

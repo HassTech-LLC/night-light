@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "installations": [
+    {
+      "directory": "feea8d1ae545e88dfb5f9123408edfccbea82238",
+      "product_id": "com.hasstech.night-light",
+      "schema": 1,
+      "files": [
+        {
+          "path": "BINARY-ORIGINS.json",
+          "size": 18124,
+          "sha256": "c283ee90b2e41e06d21b88e9b735fa872304573457f91e6e570dd04f29f0a299"
+        },
+        {
+          "path": "LICENSE",
+          "size": 1066,
+          "sha256": "de77106f8848e665780badf7b50684196fc92882d7c20b04b517146b3e1c9172"
+        },
+        {
+          "path": "NightLight.exe",
+          "size": 20624240,
+          "sha256": "87a59407fa4abdde1f4ac1969898f096fad3bb194e3acfffd7d0ff141fa2f017"
+        },
+        {
+          "path": "README.md",
+          "size": 6184,
+          "sha256": "8eee04d5e028636dd09de3316db9413674395c1b63ef9ec8df430d6a8960b406"
+        },
+        {
+          "path": "SBOM.cdx.json",
+          "size": 7880,
+          "sha256": "267c5a679c7e99f18e97a72c634be7b8318fba57daf66b4b74aefd2cbb524e46"
+        },
+        {
+          "path": "shortcut_appid_register.exe",
+          "size": 6144,
+          "sha256": "8580b1cecb94c005057f474ef528c44008983f651a52582dd1657b31a2860ee0"
+        },
+        {
+          "path": "SOURCE-MANIFEST.json",
+          "size": 11948,
+          "sha256": "f594b0810bf77f10bd590d9d5cc10203765415366c8b61123ae517f09c04e2f8"
+        },
+        {
+          "path": "THIRD-PARTY-NOTICES.txt",
+          "size": 4980,
+          "sha256": "aca4a42914d629eb12b68817655bf08c064804864774d2687d8032ee2c25b08a"
+        },
+        {
+          "path": "windows_nightlight_off.exe",
+          "size": 5120,
+          "sha256": "6d91826d328fbf67ef0ef3ffc11fed8f73d20ba17a6176bbcbf82f45523ede82"
+        },
+        {
+          "path": "wpf_jumplist.exe",
+          "size": 7680,
+          "sha256": "3be3754ab34e4febc2b05fa739457e26a64d02f192f7c041a52c5eea1e2fec0d"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/altgraph-0.17.5-LICENSE.txt",
+          "size": 1002,
+          "sha256": "6c194d6db0c64d45535d10c95142b9b0cda7b7dcc7f1ddee302b3d536f3dbe46"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/CPython-3.14.7-LICENSE.txt",
+          "size": 23601,
+          "sha256": "e745807dbaab26bb1050dc9d12e655ca8d946c38d6cb59a593c2d9557830250c"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/CustomTkinter-5.2.2-LICENSE.txt",
+          "size": 1071,
+          "sha256": "c973b8600e620159cb0473eb9b08783143e0d9ed5333f350fc933368d94d9e0d"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/darkdetect-0.8.0-LICENSE.txt",
+          "size": 1495,
+          "sha256": "69bb84664eff933addcb271c866d67622d9c2c53a5bda31b1a7523569c250afe"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/libtommath-Tcl-9.0.4-LICENSE.txt",
+          "size": 1257,
+          "sha256": "2fa64b163659f41965c9815882a8296d3d03ff546b76153e11445f9bdecf955a"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/packaging-26.3-LICENSE.APACHE.txt",
+          "size": 10174,
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/packaging-26.3-LICENSE.BSD.txt",
+          "size": 1344,
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/packaging-26.3-LICENSE.txt",
+          "size": 197,
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/pefile-2024.8.26-LICENSE.txt",
+          "size": 1083,
+          "sha256": "b44409c067c6da52bfb54bb6624fb11a7b52157c3a13ae1400232f8196e86ad3"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/Pillow-12.3.0-LICENSE.txt",
+          "size": 78016,
+          "sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/PyInstaller-6.22.2-COPYING.txt",
+          "size": 32138,
+          "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/pyinstaller-hooks-contrib-2026.7-LICENSE.txt",
+          "size": 27666,
+          "sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.bzip2.txt",
+          "size": 1780,
+          "sha256": "bd5628cc76fb0ebf9c657d1dd4d1a240a1a7b216c31663e7bbf1131c0b70a910"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.cpython.txt",
+          "size": 36935,
+          "sha256": "8fe98bf9822926d854f56ffd8d97877d8b942617aa44eb7ea77fd99e22f2537e"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.expat.txt",
+          "size": 1165,
+          "sha256": "8a9cfe4b5924f4b25881aa0c9f5e4561c5f31065d0c4a13cdcdbcf917edf39aa"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.libffi.txt",
+          "size": 1153,
+          "sha256": "9afb8970cd29fc1031fa647278e4bef613399e2e3468a1e3a397f4d158c6101c"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.liblzma.txt",
+          "size": 673,
+          "sha256": "d87d218dd908b3243ec4cbc72af400e5b7437513ea9d9229291d0812b8464fec"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.mpdecimal.txt",
+          "size": 1308,
+          "sha256": "f094277cd46e1f6e4d87916cc4b51e22f613d45eb81f48231c3cb7caf8fc8a6a"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.openssl-3.txt",
+          "size": 10352,
+          "sha256": "ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.sqlite.txt",
+          "size": 1504,
+          "sha256": "d8eb9aba7ef6b5ed06cb3ec19a7242316af2e5933c638eb67fb781c13884e01d"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.tcl.txt",
+          "size": 2295,
+          "sha256": "41613eabfc08921a7da9c4bfd7f3ce5d5406f55214b253d89f392ed86eebeb8f"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.tix.txt",
+          "size": 2880,
+          "sha256": "8cdff3addb9e9eb108c78e2cf5e05f26b216c098304945733bbec382b2eaef66"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-LICENSE.zlib.txt",
+          "size": 1016,
+          "sha256": "365e36720db366054863235aea5d6f440142ab968834bfaf81fa9d187c99b9b8"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/python-build-standalone-20260901-MPL-2.0.txt",
+          "size": 17098,
+          "sha256": "2684de17300e0a434686f1ec7f8af6045207a4b457a3fe04b2b9ce655e7c5d50"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/pywin32-ctypes-0.2.3-LICENSE.txt",
+          "size": 1644,
+          "sha256": "dfa83b3e2709adfcdb838d9ad55823ca674abb780e60563d9dd9544ccbf785e9"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/Roboto-LICENSE.txt",
+          "size": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/WebView2-LICENSE.txt",
+          "size": 1487,
+          "sha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/zlib-ng-2.2.4-LICENSE.txt",
+          "size": 867,
+          "sha256": "6c9f0d975b41afaa34d22f55bb8986ce69e5cb7ad327cb2b28820cd425edf5ee"
+        },
+        {
+          "path": "THIRD-PARTY-LICENSES/zstd-1.5.7-COPYING.txt",
+          "size": 18091,
+          "sha256": "f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505"
+        }
+      ]
+    }
+  ]
+}

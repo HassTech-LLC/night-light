@@ -9,8 +9,9 @@ assets_dir = project_dir / "assets"
 
 datas = [(str(assets_dir), "assets")]
 binaries = []
-hiddenimports = []
+hiddenimports = ['smart_time', 'tzlocal', 'tzdata']
 datas += collect_data_files('customtkinter')
+datas += collect_data_files('tzdata')
 
 
 a = Analysis(

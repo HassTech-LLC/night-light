@@ -43,7 +43,7 @@ def test_config_save_is_atomic_and_flushes_pending_timer(tmp_path):
     import threading
     cfg._lock = threading.Lock()
     cfg.save_immediate()
-    assert json.loads(cfg.file_path.read_text()) == {"enabled": True}
+    assert json.loads(cfg.file_path.read_text()) == {"enabled": True, "config_revision": 1}
 
 
 def test_ipc_parser_rejects_non_ascii_without_exception():

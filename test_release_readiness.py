@@ -88,7 +88,7 @@ def test_independent_config_snapshots_share_token_and_merge_changes(tmp_path, mo
 import pytest
 
 
-@pytest.mark.parametrize('module,method', [('tray_app', 'toggle_nightlight'), ('ui_flyout', '_on_toggle_clicked')])
+@pytest.mark.parametrize('module,method', [('tray_app', 'toggle_nightlight')])
 def test_restored_warmth_survives_restart(module, method, tmp_path, monkeypatch):
     import ast
     from pathlib import Path
@@ -104,9 +104,10 @@ def test_restored_warmth_survives_restart(module, method, tmp_path, monkeypatch)
     engine.temperature_k = 6500
     tree = ast.parse(Path(module + '.py').read_text(encoding='utf-8-sig'))
     function = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == method)
-    namespace = {'engine': engine, 'config': cfg}
+    from smart_desktop import is_v2_controller
+    namespace = {'engine': engine, 'config': cfg, 'is_v2_controller': is_v2_controller}
     exec(compile(ast.Module(body=[function], type_ignores=[]), module, 'exec'), namespace)
-    owner = SimpleNamespace(update_tray=lambda: None, update_ui_state=lambda: None, flyout=None, hud=None, on_state_change=None)
+    owner = SimpleNamespace(update_tray=lambda: None, update_ui_state=lambda: None, flyout=None, hud=None, on_state_change=None, migration_interlocked=lambda:False)
     namespace[method](owner)
     cfg.save_immediate()
     restarted = ConfigManager()
@@ -114,12 +115,16 @@ def test_restored_warmth_survives_restart(module, method, tmp_path, monkeypatch)
     assert restarted.get('temperature_k') == engine.temperature_k == 3400
 
 
-@pytest.mark.parametrize('file', ['ui_flyout.py', 'display_status.py', 'hud_overlay.py', 'wpf_jumplist.cs', 'main.py', 'create_shortcuts.py'])
+@pytest.mark.parametrize('file', ['premium_ui.py', 'display_status.py', 'hud_overlay.py', 'wpf_jumplist.cs', 'main.py', 'create_shortcuts.py'])
 def test_user_facing_names_are_night_light(file):
     from pathlib import Path
     import re
     text = Path(file).read_text(encoding='utf-8-sig')
-    assert not re.search(r'Night Light by HT|HT filter|HT Warmth|HASSTECH:|HT:|HT waits|Set HT warmth', text)
+    # Compatibility-only legacy shortcut filenames may retain the prior
+    # public name so upgrades can identify an existing pin. They are not
+    # rendered UI copy and deleting them would break safe migration.
+    compatibility = re.sub(r'(["\'])Night Light by HT\.lnk\1', "'LEGACY-PIN.lnk'", text)
+    assert not re.search(r'Night Light by HT|HT filter|HT Warmth|HASSTECH:|HT:|HT waits|Set HT warmth', compatibility)
 
 
 def test_tray_tooltip_distinguishes_app_from_windows():
@@ -176,19 +181,24 @@ def test_debounced_writer_does_not_drop_concurrent_slider_update(tmp_path, monke
 
 def test_first_launch_defaults_do_not_overwrite_a_concurrent_saved_config(tmp_path, monkeypatch):
     import json
+    from contextlib import contextmanager
     import config_manager as cm
     monkeypatch.setenv('NIGHT_LIGHT_BY_HT_CONFIG_DIR', str(tmp_path))
-    original = cm.ConfigManager.save_immediate
-    def other_process_won(manager):
-        manager.file_path.write_text(json.dumps({'temperature_k':2800, 'ipc_token':'x'*43}))
-        original(manager)
-    monkeypatch.setattr(cm.ConfigManager, 'save_immediate', other_process_won)
+    original = cm.config_file_lock
+    @contextmanager
+    def other_process_won(path):
+        # Creation now keeps the initial lock. Model a cooperating writer that
+        # wins before our acquisition instead of the removed release/save gap.
+        path.write_text(json.dumps({'temperature_k':2800, 'ipc_token':'x'*43}))
+        with original(path):yield
+    monkeypatch.setattr(cm, 'config_file_lock', other_process_won)
     cfg = cm.ConfigManager()
     assert cfg.get('temperature_k') == 2800
     assert cfg.get('ipc_token') == 'x'*43
+    assert not cfg.created_new
 
 
-@pytest.mark.parametrize('module,cls,preset,toggle', [('tray_app','TrayApp','apply_preset','toggle_nightlight'), ('ui_flyout','ModernFlyout','_apply_preset','_on_toggle_clicked')])
+@pytest.mark.parametrize('module,cls,preset,toggle', [('tray_app','TrayApp','apply_preset','toggle_nightlight')])
 def test_repeated_off_does_not_erase_last_warmth(module, cls, preset, toggle, tmp_path, monkeypatch):
     import importlib
     from types import SimpleNamespace
@@ -202,7 +212,7 @@ def test_repeated_off_does_not_erase_last_warmth(module, cls, preset, toggle, tm
     mod = importlib.import_module(module)
     monkeypatch.setattr(mod,'engine',engine)
     monkeypatch.setattr(mod,'config',cfg)
-    owner=SimpleNamespace(update_ui_state=lambda:None,update_tray=lambda:None,flyout=None,hud=None,on_state_change=None)
+    owner=SimpleNamespace(update_ui_state=lambda:None,update_tray=lambda:None,flyout=None,hud=None,on_state_change=None,migration_interlocked=lambda:False)
     klass=getattr(mod,cls)
     getattr(klass,preset)(owner,6500)
     getattr(klass,preset)(owner,6500)
