@@ -32,7 +32,13 @@ def build_premium():
         shutil.copy2(package/'lib/net462'/name,target/name)
     shutil.copy2(package/'runtimes/win-x64/native/WebView2Loader.dll',target/'WebView2Loader.dll')
     shutil.copy2(ROOT/'assets/app.ico',target/'favicon.ico')
-    shutil.copy2(package/'LICENSE.txt',ROOT/'THIRD-PARTY-LICENSES/WebView2-LICENSE.txt')
+    # A build must never rewrite a declared source input. Git may check the
+    # committed notice out with CRLF while NuGet ships LF, so compare semantic
+    # lines and fail closed if the pinned package's license text really changed.
+    package_license = (package/'LICENSE.txt').read_text(encoding='utf-8-sig').splitlines()
+    committed_license = (ROOT/'THIRD-PARTY-LICENSES/WebView2-LICENSE.txt').read_text(encoding='utf-8-sig').splitlines()
+    if package_license != committed_license:
+        raise RuntimeError('Pinned WebView2 SDK license differs from the committed notice')
     csc=Path(r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe')
     subprocess.run([str(csc),'/nologo','/target:winexe','/platform:x64',
                     '/r:System.Windows.Forms.dll','/r:System.Drawing.dll','/r:System.Web.Extensions.dll',

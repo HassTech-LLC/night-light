@@ -4,6 +4,15 @@ import pytest
 from release import validate_build_binding, sha256_bytes, SOURCE_INPUTS
 
 
+def test_premium_build_does_not_rewrite_committed_license():
+    """Release builds may verify notices but cannot mutate source identity."""
+    from pathlib import Path
+
+    source = Path("build_premium.py").read_text(encoding="utf-8")
+    assert "copy2(package/'LICENSE.txt'" not in source
+    assert "package_license != committed_license" in source
+
+
 def fixture():
     manifest = {"files": [{"path": "main.py", "sha256": "source", "size": 6}]}
     payload = {"NightLight.exe": b"test-only"}
