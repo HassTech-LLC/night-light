@@ -54,11 +54,14 @@ def create_all_shortcuts():
     assets_dir = project_dir / "assets"
     ico_path = assets_dir / "app.ico"
 
-    dist_exe = project_dir / "dist" / "NightLight.exe"
-
-    if dist_exe.exists():
-        target = dist_exe
-        args = ""
+    if getattr(sys,"frozen",False):
+        # __file__ may belong to PyInstaller's temporary extraction directory.
+        # The installed executable is the durable identity and embeds its icon.
+        target = Path(sys.executable).resolve()
+        ico_path = target
+        working_dir = target.parent
+        show_args = "--show"
+        toggle_args = "--toggle"
     else:
         python_exe = Path(sys.executable)
         pythonw_exe = python_exe.parent / "pythonw.exe"
@@ -66,7 +69,9 @@ def create_all_shortcuts():
             pythonw_exe = python_exe
 
         target = pythonw_exe
-        args = f'"{project_dir / "main.py"}"'
+        show_args = f'"{project_dir / "main.py"}" --show'
+        toggle_args = f'"{project_dir / "main.py"}" --toggle'
+        working_dir = project_dir
 
     # 1. Desktop Shortcut
     desktop = Path(os.environ.get("USERPROFILE", "")) / "Desktop"
@@ -76,13 +81,14 @@ def create_all_shortcuts():
             target_path=target,
             shortcut_path=desktop_shortcut,
             icon_path=ico_path,
-            description="Toggle Night Light (left-click) or adjust (right-click)",
-            arguments=args,
-            working_dir=project_dir,
+            description="Open Night Light controls and Smart schedule",
+            arguments=show_args,
+            working_dir=working_dir,
         )
         print(f"[Shortcuts] Created Desktop shortcut at: {desktop_shortcut}")
 
-    # 2. Start Menu Shortcut (Can be pinned to Taskbar!)
+    # 2. The primary Start entry is the pin-capable one-click moon. Controls
+    # remain a separate explicit action so opening settings never toggles.
     appdata = Path(os.environ.get("APPDATA", ""))
     start_menu = appdata / "Microsoft" / "Windows" / "Start Menu" / "Programs"
     if start_menu.exists():
@@ -91,11 +97,37 @@ def create_all_shortcuts():
             target_path=target,
             shortcut_path=start_shortcut,
             icon_path=ico_path,
-            description="Toggle Night Light (left-click) or adjust (right-click)",
-            arguments=args,
-            working_dir=project_dir,
+            description="Turn Night Light on or off",
+            arguments=toggle_args,
+            working_dir=working_dir,
         )
         print(f"[Shortcuts] Created Start Menu shortcut at: {start_shortcut}")
+        controls_shortcut = start_menu / "Night Light Controls.lnk"
+        create_shortcut(
+            target_path=target,
+            shortcut_path=controls_shortcut,
+            icon_path=ico_path,
+            description="Open Night Light controls and Smart schedule",
+            arguments=show_args,
+            working_dir=working_dir,
+        )
+        print(f"[Shortcuts] Created controls shortcut at: {controls_shortcut}")
+
+    # Windows does not provide a supported API for pinning automatically. If
+    # the user already pinned Night Light, keep that moon as the instant toggle.
+    taskbar = appdata / "Microsoft" / "Internet Explorer" / "Quick Launch" / "User Pinned" / "TaskBar"
+    for name in ("Night Light.lnk", "Night Light by HT.lnk"):
+        pinned = taskbar / name
+        if pinned.exists():
+            create_shortcut(
+                target_path=target,
+                shortcut_path=pinned,
+                icon_path=ico_path,
+                description="Turn Night Light on or off",
+                arguments=toggle_args,
+                working_dir=working_dir,
+            )
+            print(f"[Shortcuts] Updated pinned toggle at: {pinned}")
 
 
 if __name__ == "__main__":

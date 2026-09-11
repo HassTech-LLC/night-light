@@ -1,0 +1,95 @@
+<section class="settings-body" id="first-run-guide" hidden aria-labelledby="first-run-title">
+  <h2 id="first-run-title">Make evening changes automatic</h2>
+  <p class="settings-note">Start with original colors. Choose a comfortable evening appearance; you can turn it off any time.</p>
+  <ol class="settings-note"><li>Choose sunset timing with a saved location, or your own evening and morning times.</li><li>Set warmth and optional dimming. Preview is temporary and restores automatically after 20 seconds.</li><li>Save and enable Smart. Wait for “Settings saved”; saving is separate from Windows accepting the display adjustment.</li></ol>
+  <button class="primary-action" type="button" id="start-setup">Set up Smart</button>
+  <button class="neutral" type="button" id="skip-setup">Not now — keep original colors</button>
+  <p class="settings-note">Prefer Manual? Skip setup, then adjust the warmth or dimming controls when you are ready. Nothing is enabled by skipping.</p>
+</section>
+<details class="settings" id="schedule-settings">
+  <summary>Schedule &amp; preferences</summary>
+  <div class="settings-body">
+    <form id="smart-form">
+      <p class="settings-title">Smart Mode</p>
+      <button class="neutral" type="button" id="migration-begin">Review Smart Comfort without changing my current policy</button>
+      <button class="primary-action" type="button" id="migration-preview" hidden>Preview proposed schedule</button>
+      <button class="primary-action" type="button" id="migration-switch" hidden>Use this Smart Comfort schedule</button>
+      <button class="neutral" type="button" id="migration-keep" hidden>Keep current policy</button>
+      <p class="settings-note" id="migration-summary" role="status" aria-live="polite"></p>
+      <fieldset id="comfort-settings" hidden>
+        <legend>Your evening, gradually</legend>
+        <label class="field">Timing<select id="comfort-kind"><option value="personal">My chosen times</option><option value="solar">Sunset and sunrise</option></select></label>
+        <div class="time-fields"><label>Evening ready<input id="comfort-ready" type="time" value="22:00"></label><label>Morning neutral<input id="comfort-neutral" type="time" value="07:00"></label></div>
+        <p class="settings-note">Chosen times apply to personal timing. Solar timing uses your saved coordinates and Windows time zone.</p>
+        <div class="time-fields"><label>Evening warmth (K)<input id="comfort-warmth" type="number" min="1200" max="6500" step="50" value="4000"></label><label>Evening dimming (%)<input id="comfort-dim" type="number" min="0" max="80" value="0"></label></div>
+        <p class="settings-note">Lower kelvin means warmer colors. These are evening targets, not immediate output. Extra dimming is optional.</p>
+        <button class="primary-action" type="button" id="preview-comfort">Preview these targets for 20 seconds</button>
+        <button class="neutral" type="button" id="restore-comfort" hidden>Restore current mode now</button>
+        <p class="settings-note" id="comfort-preview-status" role="timer" aria-live="off"></p>
+        <details class="settings"><summary>Transition timing</summary>
+          <div class="time-fields"><label>Warmth lead (minutes)<input id="comfort-warm-lead" type="number" min="60" max="240" value="180"></label><label>Dimming lead (minutes)<input id="comfort-dim-lead" type="number" min="15" max="120" value="60"></label></div>
+          <label class="field">Adjustment pace<select id="comfort-pace"><option value="1">Gradual</option><option value="0.5">Extra gradual</option></select></label>
+          <label class="field">Ready after sunset (minutes)<input id="comfort-offset" type="number" min="-120" max="180" value="60"></label>
+          <p class="settings-note">Negative offsets mean before sunset. Starting late uses bounded catch-up; changes are not guaranteed to be imperceptible. A short night may use a gentler peak.</p>
+        </details>
+      </fieldset>
+      <p class="settings-note" id="legacy-timing-note">Sunset sets the rhythm. An optional bedtime can start your evening earlier. Times follow your Windows timezone.</p>
+      <div class="time-fields">
+        <label>Country code<input id="country" maxlength="2" value="US" autocomplete="country"></label>
+        <label>ZIP / postal code<input id="postal" maxlength="12" autocomplete="postal-code" placeholder="48127"></label>
+      </div>
+      <p class="settings-note">Only clicking Look up sends your country and postal code to Zippopotam.us. Solar calculations then work offline. Update your location when you travel.</p>
+      <p class="settings-note">VPN-safe timing: uses your saved location and Windows timezone, never your IP address. A VPN may block a postal lookup, but it will not replace your saved location.</p>
+      <button class="primary-action" id="lookup" type="button">Look up postal code</button>
+      <label class="field" id="places-field" hidden>Matching area<select id="places"></select></label>
+      <div class="time-fields">
+        <label>Latitude<input id="latitude" type="number" step="any" min="-90" max="90"></label>
+        <label>Longitude<input id="longitude" type="number" step="any" min="-180" max="180"></label>
+      </div>
+      <label class="field">Evening profile<select id="profile"><option value="balanced">Balanced · everyday comfort</option><option value="maximum">Maximum · warmer and dimmer</option></select></label>
+      <label class="field">Optional bedtime<input id="bedtime" type="time"></label>
+      <details class="settings"><summary>Fallback quiet hours</summary>
+        <p class="settings-note">Used only when location or solar events are unavailable. Leave both blank to use solar timing alone.</p>
+        <div class="time-fields"><label>Warm up<input id="quiet-start" type="time"></label><label>Return to neutral<input id="quiet-end" type="time"></label></div>
+      </details>
+      <button class="primary-action resume" id="save-smart" type="submit" aria-describedby="save-feedback">Save and enable Smart</button>
+      <p id="save-feedback" class="settings-note" role="status" aria-live="polite" aria-atomic="true"></p>
+      <button class="neutral" id="check-save" type="button" hidden>Check save again</button>
+      <button class="neutral" id="reload-saved" type="button" hidden>Reload saved settings</button>
+      <button class="neutral" id="delete-location" type="button">Delete location and stop Smart</button>
+    </form>
+    <details class="settings"><summary>About this app</summary>
+      <p class="settings-note" id="build-identity">Checking this app's build identity.</p>
+      <p class="settings-note">This identifies the app running on this computer, not the latest version on the website. A private candidate is not a signed public release.</p>
+    </details>
+    <p class="settings-title">Try a warmth</p>
+    <div class="preset-row"><button class="preset" type="button" data-kelvin="5000">Soft<span>5,000 K</span></button><button class="preset" type="button" data-kelvin="4200">Warm<span>4,200 K</span></button><button class="preset" type="button" data-kelvin="3200">Deep<span>3,200 K</span></button></div>
+    <button class="neutral" id="neutral" type="button">App Off · restore original colors</button>
+    <label class="motion-option"><input id="autostart" type="checkbox"> Start with Windows</label>
+  </div>
+</details>
+<details class="settings"><summary>Local learning</summary><div class="settings-body">
+  <label class="motion-option"><input id="learning" type="checkbox"> Learn my activity timing on this device</label>
+  <p class="settings-note">Optional. Stores up to 14 daily timing pairs, never keys, apps, titles, screenshots or browsing. Inactivity is an estimate, not measured sleep. Seven consistent nights are needed; low confidence uses Solar Sync.</p>
+  <p class="settings-note" id="learning-status"></p>
+  <div class="preset-row"><button type="button" class="preset" id="mark-sleep">I'm winding down</button><button type="button" class="preset" id="mark-wake">I'm awake</button></div>
+  <button type="button" class="neutral" id="reset-learning">Delete learning history</button>
+</div></details>
+<details class="settings"><summary>Quick guide &amp; safety</summary><div class="settings-body guide">
+  <button type="button" class="neutral" id="reopen-setup">Show quick start</button>
+  <p><strong>Pin it for quicker access.</strong> Open Night Light, right-click its icon on the Windows taskbar, then choose Pin to taskbar. Windows controls whether this option is available. The small moon near the clock is a separate background-app icon and may be under the hidden-icons arrow.</p>
+  <p><strong>Your choices, not inferred sleep.</strong> Smart Comfort uses your chosen schedule. “Evening ready” is when you want your target appearance, not a measured bedtime. A VPN does not change your saved coordinates; update them yourself when you move.</p>
+  <p><strong>Keep it handy.</strong> Right-click Night Light in Start → More → Pin to taskbar. Right-click the tray moon near your clock to open this panel.</p>
+  <p><strong>Warmth &amp; dimming.</strong> Warmth reduces blue output. Dimming lowers software output, not your monitor’s hardware brightness.</p>
+  <p><strong>Smart.</strong> Follows local sunset and sunrise. Adjusting a slider holds your choice for one hour. Pause restores original colors; Resume rejoins the schedule gently.</p>
+  <p><strong>Manual.</strong> Keeps your own settings. App Off stops automation until you enable it again.</p>
+  <p><strong>Hold to compare.</strong> Temporarily restores your actual display. Release, leave the window, or wait 10 seconds to restore the filter.</p>
+  <p><strong>Emergency reset.</strong> Ctrl+Shift+N restores original colors and stops Smart while the app is running.</p>
+  <p id="hotkey-status"></p>
+  <p>Windows Night Light on or unknown pauses this filter to avoid stacking. This app does not measure sleep or melatonin and is not medical treatment.</p>
+  <button type="button" class="primary-action" id="windows-off">Turn Windows Night Light off</button>
+  <p><strong>Display conflict.</strong> If the software transform changes outside Night Light, it stops writing. Check Windows and close any other color tool before retrying. Readback checks Windows software state; it does not identify which app changed it, measure your physical screen or detect every color pipeline.</p>
+  <button type="button" class="neutral" id="retry-display">Retry display</button>
+  <button type="button" class="neutral" id="quit">Quit Night Light</button>
+</div></details>
+<p id="feedback" class="settings-note" role="status" aria-live="polite"></p>

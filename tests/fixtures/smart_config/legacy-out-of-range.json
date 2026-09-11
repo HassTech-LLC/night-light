@@ -1,0 +1,10 @@
+{
+  "config_revision": 2,
+  "enabled": true,
+  "smart_enabled": false,
+  "temperature_k": 1000,
+  "brightness": 0.1,
+  "smart_location": {"latitude": "invalid", "longitude": 900},
+  "smart_bedtime": "not a time",
+  "unknown_preference": [1, 2, 3]
+}

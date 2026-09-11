@@ -2,7 +2,11 @@
 import hashlib
 import hmac
 import socket
-from config_manager import get_or_create_ipc_token
+
+def get_or_create_ipc_token():
+    # Installer command clients must not initialize application settings.
+    from config_manager import get_or_create_ipc_token as obtain
+    return obtain()
 
 IPC_PORT = 49382
 
@@ -92,9 +96,9 @@ def acknowledge(conn, token, command, nonces, handled):
     _send(conn, {'proof': _proof(token, 'ack', *nonces, command) if handled else ''})
 
 
-def send_ipc_command(command='TOGGLE'):
+def send_ipc_command(command='TOGGLE', *, existing_token=None):
     try:
-        token = get_or_create_ipc_token()
+        token = get_or_create_ipc_token() if existing_token is None else existing_token
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.settimeout(2.0)
             client.connect(('127.0.0.1', IPC_PORT))
@@ -109,4 +113,24 @@ def send_ipc_command(command='TOGGLE'):
             reply = _receive(client).get('proof', '')
             return isinstance(reply, str) and reply.isascii() and hmac.compare_digest(reply, _proof(token, 'ack', client_nonce, server_nonce, command))
     except (OSError, ValueError, TypeError, UnicodeError):
+        return False
+
+
+def request_resident_exit():
+    """Authenticate to an existing resident only; never create/repair settings.
+
+    True means request acknowledged, not proof the process or file locks exited.
+    Installer must independently wait for that evidence before changing files.
+    """
+    from config_paths import config_directory
+    try:
+        path=config_directory()/'config.json'
+        if path.is_symlink():return False
+        with path.open('rb') as stream:raw=stream.read(2*1024*1024+1)
+        if len(raw)>2*1024*1024:return False
+        data=json.loads(raw)
+        token=data.get('ipc_token')
+        if not isinstance(token,str) or not 32<=len(token)<=256 or not token.isascii():return False
+        return send_ipc_command('QUIT',existing_token=token)
+    except (OSError,ValueError,TypeError,AttributeError):
         return False

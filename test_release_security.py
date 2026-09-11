@@ -29,6 +29,7 @@ def resident(monkeypatch):
     app.apply_strength = lambda value: calls.append(('STRENGTH', value))
     app.apply_preset = lambda value: calls.append(('PRESET', value))
     app.turn_windows_nightlight_off = lambda: calls.append('WINDOWS_OFF')
+    app.quit_app = lambda: calls.append('QUIT')
     app._start_ipc_server()
     yield token, calls
     app._is_running = False
@@ -89,6 +90,13 @@ def test_client_proof_rejects_reflection_replay_and_command_tamper(resident, att
 def test_unknown_command_is_not_acknowledged(resident):
     assert ipc.send_ipc_command('LAUNCH SOMETHING') is False
     assert ipc.send_ipc_command('START')
+
+
+def test_authenticated_quit_is_queued_without_starting_or_toggling(resident):
+    assert ipc.send_ipc_command('QUIT')
+    deadline=time.monotonic()+1
+    while not resident[1] and time.monotonic()<deadline:time.sleep(.001)
+    assert resident[1]==['QUIT']
 
 
 def test_command_process_exits_without_display_import_or_cleanup(resident):

@@ -134,7 +134,7 @@ def test_release_bundle_is_deterministic_and_self_verifying(tmp_path):
     import json
     import zipfile
 
-    from release import create_release, verify_release
+    from release import create_release, project_version, verify_release, source_manifest
 
     dist = tmp_path / "dist"
     dist.mkdir()
@@ -146,6 +146,15 @@ def test_release_bundle_is_deterministic_and_self_verifying(tmp_path):
         "BINARY-ORIGINS.json": b'{"schema_version":1,"binaries":[]}\n',
     }.items():
         (dist / name).write_bytes(payload)
+    # Synthetic payload fixture, explicitly bound to synthetic runtime evidence.
+    origins = {"schema_version": 1, "binaries": [],
+               "runtime": {"implementation": "CPython", "version": "3.14.7"},
+               "source_manifest": source_manifest(ROOT),
+               "payloads": [{"destination": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                             "size": path.stat().st_size} for path in dist.glob("*.exe")]}
+    from build_identity import make_identity
+    origins['build_identity']=make_identity(origins['source_manifest'],project_version(),origins['runtime'])
+    (dist / "BINARY-ORIGINS.json").write_text(json.dumps(origins), encoding="utf-8")
 
     first = tmp_path / "first.zip"
     second = tmp_path / "second.zip"
@@ -181,3 +190,12 @@ def test_release_sources_do_not_reference_pystray_or_six_runtime_dependency():
     joined = "\n".join(path.read_text(encoding="utf-8").lower() for path in scanned)
     assert "pystray" not in joined
     assert 'name = "six"' not in (ROOT / "uv.lock").read_text(encoding="utf-8").lower()
+
+
+def test_release_sbom_uses_the_single_project_version(tmp_path):
+    from release import project_version, sbom_document
+    dist=tmp_path/'dist';dist.mkdir();(dist/'NightLight.exe').write_bytes(b'fixture')
+    document=sbom_document({'files':[{'path':'main.py','sha256':'a'*64,'size':1}]},dist)
+    app=next(row for row in document['components'] if row['name']=='Night Light')
+    assert app['version']==project_version()=='0.2.0'
+    assert document['metadata']['component']['version']==project_version()

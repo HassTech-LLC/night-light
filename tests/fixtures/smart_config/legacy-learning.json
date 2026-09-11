@@ -1,0 +1,16 @@
+{
+  "config_revision": 12,
+  "enabled": true,
+  "smart_enabled": true,
+  "temperature_k": 4200,
+  "brightness": 0.9,
+  "smart_profile": "maximum",
+  "smart_learning": true,
+  "smart_nights": [{"date": "2026-09-01", "sleep": 1380, "wake": 420}],
+  "smart_location": {"latitude": 42.3353, "longitude": -83.2864, "city": "Dearborn Heights", "postal": "48127"},
+  "smart_bedtime": "23:00",
+  "autostart": true,
+  "theme": {"mode": "dark", "finish": "ceramic", "panel": "#29251F"},
+  "future_extension": {"keep": true},
+  "ipc_token": "REDACTED-FIXTURE-ONLY-NOT-A-REAL-CREDENTIAL"
+}

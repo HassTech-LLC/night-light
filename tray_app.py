@@ -28,10 +28,17 @@ from win32_tray import TrayIcon
 from nightlight_engine import engine
 from config_manager import config, get_or_create_ipc_token
 from ipc_transport import authenticate_request, acknowledge, send_ipc_command
-from ui_flyout import ModernFlyout
+from premium_ui import PremiumFlyout
 from hud_overlay import HudToast
 from windows_nightlight import WindowsNightLightStatus, get_windows_nightlight_status
 from display_status import derive_display_status
+from smart_mode import SmartController
+from smart_desktop import SmartDesktopController, is_v2_controller
+from smart_migration import uses_v2, initialize_first_install
+from smart_migration_switch import MigrationSwitch
+from smart_ui import show_smart_setup
+from smart_windows import EmergencyHotkey, idle_seconds, high_contrast_active
+from datetime import datetime
 import icons
 
 APP_ID = "Hassan.NightLightWidget.App.1.0"
@@ -70,12 +77,15 @@ class TrayApp:
         # Connect GUI dispatcher for 60fps animations
         engine.set_gui_dispatcher(self.root.after)
 
-        self.flyout: Optional[ModernFlyout] = None
+        self.flyout: Optional[PremiumFlyout] = None
         self.hud: Optional[HudToast] = None
         self.tray_icon: Optional[TrayIcon] = None
         self._is_running = True
         self._server_sock: Optional[socket.socket] = listener
         self._ipc_token = get_or_create_ipc_token()
+        self._clean_exit_requested = False
+        initialize_first_install(config)
+        config.begin_session()
         self.windows_nightlight_status = WindowsNightLightStatus(None, "Checking Windows Night Light")
         if "windows_nightlight_mode" in config.data:
             config.data.pop("windows_nightlight_mode", None)
@@ -100,16 +110,21 @@ class TrayApp:
         engine.set_windows_nightlight_policy(
             self.windows_nightlight_status.is_enabled is not False
         )
-        if saved_enabled:
+        try:
+            restore_hold = time.time() < float(config.get('smart_hold_until',0)) <= time.time()+3600 and config.get('smart_hold_kind') != 'pause'
+        except (ValueError, TypeError):
+            restore_hold = False
+        if not uses_v2(config) and saved_enabled and (not config.get('smart_enabled', False) or restore_hold):
             engine.set_state(enabled=True, smooth=False)
 
+        self.smart = SmartDesktopController(engine, config) if uses_v2(config) else SmartController(engine, config)
+        self.smart_window = None
+        self.emergency_hotkey=EmergencyHotkey(self._emergency_reset)
+        self.smart.hotkey_status='Ctrl+Shift+N ready' if self.emergency_hotkey.active else 'Ctrl+Shift+N unavailable — use App Off'
+        self.root.after(100,self._poll_emergency)
+
         # Initialize flyout and HUD overlay
-        self.flyout = ModernFlyout(
-            on_state_change=self.update_tray,
-            on_quit_app=self.quit_app,
-            on_windows_off=self.turn_windows_nightlight_off,
-            get_display_status=self._get_display_status,
-        )
+        self.flyout = PremiumFlyout(self, engine, config)
         self.hud = HudToast(self.root, on_click=self.show_flyout)
 
         # Register Windows Taskbar JumpList
@@ -128,17 +143,62 @@ class TrayApp:
         # Start Localhost IPC Server
         self._start_ipc_server()
         self.root.after(2000, self._refresh_windows_nightlight_policy)
+        self._smart_timer=self.root.after(100, self._tick_smart)
 
         atexit.register(self.cleanup)
 
+    def migration_interlocked(self):
+        switch=getattr(self,'_migration',None)
+        return switch is not None and (not switch.done or
+            switch.result.get('outcome') in {'migration_off_not_saved','migration_activation_failed'} or
+            (uses_v2(config) and not switch.result.get('adopted',False)))
+
+    def migration_off(self):
+        switch=getattr(self,'_migration',None)
+        if switch is not None and not switch.done:switch.off()
+        else:engine.reset_to_neutral()
+        return 'Off requested. Finishing the settings handoff; display reset is not yet confirmed.'
+
+    def begin_smart_migration(self,proposal,binary_path):
+        """Native-only entry; caller must supply installer-verified prior binary.
+
+        No web command accepts a binary path or can manufacture a proposal.
+        The public review remains disabled until installer/rollback is ready.
+        """
+        if self.migration_interlocked() or uses_v2(config):
+            raise ValueError('A migration is already active or complete.')
+        if config.automatic_output_blocked or not config.session_id:
+            raise ValueError('Recovery storage is unavailable. Restart before switching.')
+        if self.smart_window is not None and self.smart_window.winfo_exists():
+            raise ValueError('Close the older schedule editor before switching.')
+        if isinstance(self.flyout,PremiumFlyout):
+            self.flyout.actions.preview=None
+            self.flyout.actions.preview_deadline=0
+        def adopt():
+            previous=self.smart
+            self.smart=SmartDesktopController(engine,config)
+            self.smart.hotkey_status=previous.hotkey_status
+        self._migration=MigrationSwitch(config,engine,proposal,binary_path,adopt)
+        timer=getattr(self,'_smart_timer',None)
+        if timer is not None:self.root.after_cancel(timer)
+        self._smart_timer=self.root.after(100,self._tick_smart)
+
     def _ensure_jumplist(self):
         """Binds taskbar shortcuts to this app, then registers its JumpList."""
+        state = self._get_display_status()
+        try:held = float(config.get('smart_hold_until',0))>time.time()
+        except (ValueError,TypeError):held=False
+        if is_v2_controller(self.smart):held=self.smart.owner.state.override is not None
+        smart_state = ('paused' if held else 'active') if self.smart.enabled else 'off'
+        signature = (state.windows_label.lower(), smart_state)
+        if getattr(self,'_jumplist_signature',None)==signature or getattr(self,'_jumplist_busy',False):return
+        self._jumplist_busy=True
         def _reg():
             try:
                 base_dir = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).parent
                 appid_exe = base_dir / "shortcut_appid_register.exe"
                 appdata = Path(os.environ.get("APPDATA", ""))
-                shortcut_names = ("Night Light by HT.lnk", "Night Light.lnk")
+                shortcut_names = ("Night Light by HT.lnk", "Night Light.lnk", "Night Light Controls.lnk")
                 shortcut_folders = (
                     appdata / "Microsoft" / "Internet Explorer" / "Quick Launch" / "User Pinned" / "TaskBar",
                     appdata / "Microsoft" / "Windows" / "Start Menu" / "Programs",
@@ -156,16 +216,92 @@ class TrayApp:
                 jl_exe = base_dir / "wpf_jumplist.exe"
                 if jl_exe.exists():
                     target_exe = base_dir / "NightLight.exe"
-                    state = self._get_display_status()
-                    strength = int(((6500 - engine.temperature_k) / (6500 - 1200)) * 100.0) if engine.is_enabled else 0
                     subprocess.run(
-                        [str(jl_exe), str(target_exe), state.windows_label.lower(), state.hass_label.lower(), str(strength)],
+                        [str(jl_exe), str(target_exe), signature[0], signature[1]],
                         creationflags=0x08000000,
                         timeout=10,
+                        check=True,
                     )
+                    self._jumplist_signature=signature
             except Exception:
                 pass
+            finally:self._jumplist_busy=False
         threading.Thread(target=_reg, daemon=True).start()
+
+    def taskbar_smart(self, pause):
+        if self.migration_interlocked():return
+        """Explicit shortcuts; a stale pause cannot toggle the filter back on."""
+        if self.smart.enabled:
+            if getattr(getattr(self,'flyout',None),'actions',None):self.flyout.actions.end_preview()
+            if pause:self.smart.hold(pause=True)
+            else:self.smart.resume()
+            self.update_tray()
+            if self.flyout:self.flyout.update_ui_state()
+        else:self.show_flyout()
+
+    def show_smart_setup(self):
+        if self.migration_interlocked():
+            self.show_flyout();return
+        if is_v2_controller(self.smart):
+            self.show_flyout()
+            return
+        if self.smart_window is not None and self.smart_window.winfo_exists():
+            self.smart_window.lift()
+            return
+        self.smart_window = show_smart_setup(self.root, self.smart)
+
+    def _tick_smart(self):
+        if not self._is_running:
+            return
+        if self.migration_interlocked():
+            self._migration.poll()
+            if self.flyout:self.flyout.update_ui_state()
+            self._smart_timer=self.root.after(100,self._tick_smart)
+            return
+        if is_v2_controller(self.smart):
+            try:
+                now=time.monotonic()
+                if now>=getattr(self,'_v2_ui_due',0):
+                    self._v2_ui_due=now+1
+                    if self.smart.enabled and high_contrast_active():
+                        self.smart.manual(reset=True)
+                        self.smart.status='Smart stopped for Windows high contrast'
+                    self.update_tray()
+                    if self.flyout:self.flyout.update_ui_state()
+                self.smart.tick()
+            finally:
+                if self._is_running:self._smart_timer=self.root.after(100,self._tick_smart)
+            return
+        try:
+            self.smart.learner.observe(datetime.now().astimezone(),idle_seconds())
+            if self.smart.enabled and high_contrast_active():
+                if isinstance(self.flyout, PremiumFlyout):self.flyout.actions.preview=None
+                self.smart.manual(reset=True)
+                self.smart.status='Smart stopped for Windows high contrast — re-enable after turning high contrast off'
+            elif not (isinstance(self.flyout, PremiumFlyout) and self.flyout.actions.preview):
+                self.smart.tick()
+            self._ensure_jumplist()
+            if self.flyout:
+                self.flyout.update_ui_state()
+            if self.tray_icon:
+                self.tray_icon.icon = self._get_current_image()
+                self.tray_icon.title = self._get_tooltip()
+        finally:
+            if self._is_running:
+                self._smart_timer=self.root.after(25000, self._tick_smart)
+
+    def _poll_emergency(self):
+        if not self._is_running:return
+        self.emergency_hotkey.poll()
+        self.root.after(100,self._poll_emergency)
+
+    def _emergency_reset(self):
+        if self.migration_interlocked():
+            self.migration_off();return
+        if isinstance(self.flyout, PremiumFlyout):self.flyout.actions.preview=None
+        self.smart.manual(reset=True)
+        if self.flyout:self.flyout.update_ui_state()
+        self.update_tray()
 
     def _get_tooltip(self) -> str:
         state = self._get_display_status()
@@ -182,6 +318,7 @@ class TrayApp:
             brightness=engine.brightness,
             windows_active=self.windows_nightlight_status.is_enabled,
             backend_applied=engine.is_applied,
+            output_fault=engine.output_fault,
         )
 
     def _get_current_image(self) -> Image.Image:
@@ -200,6 +337,15 @@ class TrayApp:
 
     def toggle_nightlight(self, show_hud: bool = True):
         """Toggles Night Light ON/OFF with smooth fade and HUD confirmation."""
+        if self.migration_interlocked():
+            self.migration_off();return
+        if is_v2_controller(getattr(self,'smart',None)):
+            self.smart.toggle();self.update_tray()
+            if self.flyout:self.flyout.update_ui_state()
+            return
+        if getattr(getattr(self,'flyout',None),'actions',None):self.flyout.actions.end_preview()
+        if getattr(self, 'smart', None):
+            self.smart.hold()
         smooth = config.get("smooth_transitions", True)
         if not engine.is_enabled and engine.temperature_k >= 6500:
             engine.temperature_k = int(config.get("last_temperature_k", 3400))
@@ -219,6 +365,18 @@ class TrayApp:
 
     def apply_preset(self, kelvin: int):
         """Applies a specific color temperature preset."""
+        if self.migration_interlocked():
+            if kelvin>=6500:self.migration_off()
+            return
+        if is_v2_controller(getattr(self,'smart',None)):
+            if kelvin>=6500:self.smart.command('off')
+            else:self.smart.adjust(kelvin)
+            self.update_tray()
+            if self.flyout:self.flyout.update_ui_state()
+            return
+        if getattr(getattr(self,'flyout',None),'actions',None):self.flyout.actions.end_preview()
+        if getattr(self, 'smart', None):
+            self.smart.manual(reset=True) if kelvin >= 6500 else self.smart.hold()
         if kelvin >= 6500:
             engine.set_state(temperature_k=6500, enabled=False, smooth=True)
             if config.get("temperature_k", 3400) < 6500:
@@ -242,7 +400,17 @@ class TrayApp:
 
     def apply_strength(self, strength: int):
         """Applies a direct taskbar JumpList strength level and persists it."""
+        if self.migration_interlocked():
+            if strength==0:self.migration_off()
+            return
+        if is_v2_controller(getattr(self,'smart',None)):
+            strength=max(0,min(100,int(strength)))
+            self.apply_preset(round(6500-5300*strength/100))
+            return
+        if getattr(getattr(self,'flyout',None),'actions',None):self.flyout.actions.end_preview()
         strength = max(0, min(100, int(strength)))
+        if getattr(self, 'smart', None):
+            self.smart.manual(reset=True) if strength == 0 else self.smart.hold()
         engine.set_strength_live(strength)
         config.set("temperature_k", engine.temperature_k, save_now=True)
         config.set("enabled", engine.is_enabled, save_now=True)
@@ -269,10 +437,32 @@ class TrayApp:
             self.root.after(2500, lambda: self._refresh_windows_nightlight_policy(schedule_next=False))
 
     def _refresh_windows_nightlight_policy(self, schedule_next: bool = True):
+        engine.refresh_output_observation()
         previous = self.windows_nightlight_status.is_enabled
         self.windows_nightlight_status = get_windows_nightlight_status()
         native_blocks_ht = self.windows_nightlight_status.is_enabled is not False
-        engine.set_windows_nightlight_policy(native_blocks_ht)
+        if self.migration_interlocked():
+            engine.set_windows_nightlight_policy(native_blocks_ht)
+        elif is_v2_controller(getattr(self,'smart',None)):
+            engine.set_windows_nightlight_policy(native_blocks_ht)
+            self.smart.tick()
+        elif getattr(self, 'smart', None) and self.smart.enabled and not native_blocks_ht and engine.is_suppressed_by_windows_nightlight:
+            # Clear policy while neutral, then let Smart fade to its current curve.
+            was_enabled = engine.is_enabled
+            engine.set_state(enabled=False, smooth=False)
+            engine.set_windows_nightlight_policy(False)
+            try:
+                hold_active = time.time() < float(config.get('smart_hold_until',0)) <= time.time()+3600
+            except (TypeError,ValueError):
+                hold_active = False
+            if hold_active and config.get('smart_hold_kind') != 'pause':
+                engine.set_state(enabled=was_enabled, smooth=True, duration=120)
+            self.smart.rejoin = True
+            self.smart.fade_until = 0
+            if not (isinstance(self.flyout, PremiumFlyout) and self.flyout.actions.preview):
+                self.smart.tick()
+        else:
+            engine.set_windows_nightlight_policy(native_blocks_ht)
         if self.flyout:
             self.flyout.update_ui_state()
         if previous != self.windows_nightlight_status.is_enabled:
@@ -283,10 +473,7 @@ class TrayApp:
     def show_flyout(self):
         """Opens the modern Windows 11 adjustment flyout directly."""
         if self.flyout:
-            if self.flyout.winfo_viewable():
-                self.flyout.hide_flyout()
-            else:
-                self.flyout.show_flyout_at_tray()
+            self.flyout.show_flyout_at_tray()
 
     def _start_ipc_server(self):
         """Background localhost TCP socket listener for single-instance triggers."""
@@ -305,6 +492,11 @@ class TrayApp:
                                 self._schedule_on_main(lambda: self.toggle_nightlight(show_hud=True))
                                 handled = True
                             elif cmd_upper == "START":
+                                handled = True
+                            elif cmd_upper == "QUIT":
+                                handled = True
+                            elif cmd_upper in ("PAUSE_SMART", "RESUME_SMART"):
+                                self._schedule_on_main(lambda pause=cmd_upper=="PAUSE_SMART": self.taskbar_smart(pause))
                                 handled = True
                             elif cmd_upper in ("SHOW", "ADJUST", "OPEN"):
                                 self._schedule_on_main(self.show_flyout)
@@ -328,6 +520,8 @@ class TrayApp:
                                 handled = True
 
                             acknowledge(conn, self._ipc_token, data, nonces, handled)
+                            if handled and cmd_upper=='QUIT':
+                                self._schedule_on_main(self.quit_app)
                     except socket.timeout:
                         continue
                     except (ConnectionResetError, BrokenPipeError, UnicodeError, ValueError):
@@ -351,6 +545,7 @@ class TrayApp:
     def quit_app(self):
         self._is_running = False
         engine.reset_to_neutral()
+        self._clean_exit_requested = True
         self.cleanup()
         if self.root:
             try:
@@ -362,8 +557,18 @@ class TrayApp:
 
     def cleanup(self):
         self._is_running = False
+        migrating=self.migration_interlocked()
+        if migrating:self._migration.close()
+        if is_v2_controller(getattr(self,'smart',None)):self.smart.close()
+        if isinstance(getattr(self,'flyout',None), PremiumFlyout):self.flyout.close()
+        if getattr(self,'emergency_hotkey',None):self.emergency_hotkey.close()
         try:
-            config.save_immediate()
+            if migrating:
+                pass  # Worker persists Off; never block Tk on migration storage.
+            elif getattr(self,'_clean_exit_requested',False):
+                config.finish_session()
+            else:
+                config.save_immediate()
         except Exception as error:
             print(f'[Night Light] Cleanup configuration save failed: {error}')
         for attribute, operation in (('tray_icon', 'stop'), ('_server_sock', 'close')):

@@ -1,0 +1,3 @@
+# Pinned wheels verified against PyPI release metadata, 2026-09-09.
+tzdata==2026.3 --hash=sha256:dc096730c87af6cab1b171c9d532be840741ff5d459015e7f6947bd7d7e54931
+tzlocal==5.4.4 --hash=sha256:aae09f0126a8a86fa736be266eb4a471380d26a0de3bc14844e7821fee3e2a15

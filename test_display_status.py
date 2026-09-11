@@ -41,3 +41,13 @@ def test_app_off_does_not_claim_windows_is_off():
     )
     assert state.hass_label == "OFF"
     assert state.windows_label == "ON"
+
+
+def test_unknown_backend_is_not_reported_active():
+    state=derive_display_status(app_enabled=True,brightness=1,windows_active=False,backend_applied=None)
+    assert state.hass_label=='UNKNOWN' and not state.hass_effective
+
+
+def test_off_does_not_claim_all_other_color_pipelines_are_off():
+    state=derive_display_status(app_enabled=False,brightness=1,windows_active=False)
+    assert state.summary=='Night Light is off'

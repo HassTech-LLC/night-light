@@ -23,6 +23,8 @@ dist/
 *.log
 out.txt
 err.txt
+.env*
+!.env.example
 
 # IDE and operating system
 .idea/
@@ -36,6 +38,9 @@ desktop.ini
 
 # Local audit evidence, build sandboxes, and release candidates
 audit/
+assets/premium/
+assets/BUILD-IDENTITY.json
+.playwright-cli/
 
 # Local HassTech portfolio memory wiring (contains workstation paths)
 AGENTS.md

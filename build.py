@@ -7,6 +7,7 @@ preparing this Windows account after a successful build.
 """
 
 import argparse
+from build_premium import build_premium
 import ast
 import hashlib
 import json
@@ -15,6 +16,7 @@ from pathlib import Path
 import subprocess
 import sys
 import shutil
+import platform
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -94,6 +96,8 @@ def build(
     spec_file = proj_dir / "NightLight.spec"
     dist_dir = Path(dist_dir).resolve() if dist_dir else proj_dir / "dist"
     build_dir = Path(build_dir).resolve() if build_dir else proj_dir / "build"
+    from release import source_manifest
+    source_before = source_manifest(proj_dir)
 
     # Ensure icon exists
     if not ico_path.exists():
@@ -153,12 +157,18 @@ def build(
         str(spec_file),
     ]
 
+    build_premium()
+    import tomllib
+    from build_identity import make_identity
+    identity=make_identity(source_before,tomllib.loads((proj_dir/'pyproject.toml').read_text(encoding='utf-8'))['project']['version'],
+                           {'implementation':platform.python_implementation(),'version':platform.python_version()})
+    (assets_dir/'BUILD-IDENTITY.json').write_text(json.dumps(identity,sort_keys=True,indent=2)+'\n',encoding='utf-8')
     print("Running PyInstaller:", " ".join(cmd))
     res = subprocess.run(cmd, cwd=str(proj_dir), env=_sanitized_build_environment())
 
     if res.returncode == 0:
         analysis_toc = build_dir / "NightLight" / "Analysis-00.toc"
-        allowed_roots = (Path(sys.prefix), Path(sys.base_prefix))
+        allowed_roots = (Path(sys.prefix), Path(sys.base_prefix), proj_dir / 'assets/premium')
         origins = validate_binary_origins(
             _analysis_binary_entries(analysis_toc),
             allowed_roots=allowed_roots,
@@ -196,13 +206,19 @@ def build(
         ]
         manifest = {
             "schema_version": 1,
+            "runtime": {"implementation": platform.python_implementation(), "version": platform.python_version()},
+            "build_identity": identity,
+            "source_manifest": source_before,
             "policy": "fail-closed",
             "allowed_roots": [str(root.resolve()) for root in allowed_roots],
             "prohibited_origin_markers": ["\\\\jdk", "\\\\java", "\\\\gradle"],
             "binaries": origins,
             "payloads": payloads,
+            "embedded_premium": json.loads((proj_dir / 'assets/premium/ORIGINS.json').read_text(encoding='utf-8')),
         }
         origin_text = json.dumps({"binaries": origins, "payloads": payloads})
+        if source_manifest(proj_dir)["files"] != source_before["files"]:
+            raise RuntimeError("Source changed during build; rebuild before packaging")
         if any(marker.lower() in origin_text.lower() for marker in manifest["prohibited_origin_markers"]):
             raise RuntimeError("prohibited ambient binary origin detected")
         (dist_dir / "BINARY-ORIGINS.json").write_text(
