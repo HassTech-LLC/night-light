@@ -16,7 +16,9 @@ def build_premium():
     archive = ROOT / 'audit/webview-sdk/sdk.zip'
     if not archive.exists():
         archive.parent.mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(f'https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/{VERSION}/microsoft.web.webview2.{VERSION}.nupkg', archive)
+        # Scheme and host are fixed to HTTPS; the archive is rejected immediately
+        # below unless it matches the release-pinned SHA-256.
+        urllib.request.urlretrieve(f'https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/{VERSION}/microsoft.web.webview2.{VERSION}.nupkg', archive)  # nosec B310
     if hashlib.sha256(archive.read_bytes()).hexdigest() != SDK_SHA256:
         raise RuntimeError('Pinned WebView2 SDK hash mismatch')
     with zipfile.ZipFile(archive) as sdk:
