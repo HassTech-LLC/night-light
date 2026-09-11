@@ -56,7 +56,9 @@ For Windows warnings, WebView2, an old pin, upgrades, or removal, follow the [co
 
 The website is the current installer distribution channel. This is unsigned Early Access, not a certified or independently security-audited release. Hardware, HDR, color-managed applications, and Windows policy can affect behavior.
 
-**Source synchronization is still in progress.** These product screenshots describe the current downloadable application. The repository's default-branch code is not yet a reproducible source snapshot of that installer; do not infer build parity from this README. A public source release must include version-bound build and verification instructions.
+The default branch contains the synchronized premium application source and version-bound Windows build pipeline. GitHub CI builds and verifies an unsigned candidate archive with source identity, binary origins, third-party notices, SBOM, checksums, and deterministic packaging evidence. The website installer is a separately identified distribution artifact; compare its displayed version and SHA-256 instead of assuming that any binary is interchangeable with a source commit.
+
+See the [release security review](docs/security/RELEASE_SECURITY_REVIEW_2026-09-11.md) for completed checks and explicit limitations. In particular, the managed Codex Security Deep Scan could not run under this task's unrestricted filesystem profile, and the current installer is not code-signed.
 
 ## Development
 
