@@ -49,3 +49,4 @@ GEMINI.md
 # Local knowledge-graph output and release staging
 graphify-out/
 release/
+setup-out/
