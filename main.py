@@ -76,7 +76,7 @@ def main():
         app.root.after(150, app.show_flyout)
     elif command.startswith("PRESET"):
         try:
-            k = int(command.split()[1])
+            k = max(1200, min(6500, int(command.split()[1])))
             app.root.after(150, lambda k=k: app.apply_preset(k))
         except Exception:
             pass

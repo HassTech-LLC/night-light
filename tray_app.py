@@ -120,7 +120,7 @@ class TrayApp:
         self.smart = SmartDesktopController(engine, config) if uses_v2(config) else SmartController(engine, config)
         self.smart_window = None
         self.emergency_hotkey=EmergencyHotkey(self._emergency_reset)
-        self.smart.hotkey_status='Ctrl+Shift+N ready' if self.emergency_hotkey.active else 'Ctrl+Shift+N unavailable — use App Off'
+        self.smart.hotkey_status='Ctrl+Alt+Shift+N ready' if self.emergency_hotkey.active else 'Ctrl+Alt+Shift+N unavailable — use App Off'
         self.root.after(100,self._poll_emergency)
 
         # Initialize flyout and HUD overlay
@@ -370,7 +370,7 @@ class TrayApp:
             return
         if is_v2_controller(getattr(self,'smart',None)):
             if kelvin>=6500:self.smart.command('off')
-            else:self.smart.adjust(kelvin)
+            else:self.smart.adjust(max(1200,min(6500,int(kelvin))))
             self.update_tray()
             if self.flyout:self.flyout.update_ui_state()
             return
@@ -504,7 +504,7 @@ class TrayApp:
                             elif cmd_upper.split()[:1] == ["PRESET"]:
                                 parts = data.split()
                                 if len(parts) == 2 and parts[1].isdigit():
-                                    k = max(1000, min(6500, int(parts[1])))
+                                    k = max(1200, min(6500, int(parts[1])))
                                     self._schedule_on_main(lambda k=k: self.apply_preset(k))
                                     handled = True
                             elif cmd_upper.split()[:1] == ["STRENGTH"]:

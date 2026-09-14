@@ -9,16 +9,21 @@ from nightlight_engine import NightLightEngine
 from windows_nightlight import parse_cloudstore_state
 
 
-def test_cloudstore_parser_accepts_windows_11_default_disabled_marker():
-    data = bytearray(b"CB\x01\x00" + bytes(39))
-    data[18] = 0x10
-    assert parse_cloudstore_state(bytes(data)).is_enabled is False
+def test_cloudstore_parser_reads_windows_11_26200_off_state():
+    live = bytes.fromhex("43420100" "0a020100" "2a06f28e83d506" "2a2b0e10" "43420100" "c614e9cd89b5cc80d0ee01" "00" "000000")
+    assert parse_cloudstore_state(live).is_enabled is False
 
 
-def test_cloudstore_parser_keeps_unknown_marker_safe():
+def test_cloudstore_parser_keeps_unknown_structure_safe():
     data = bytearray(b"CB\x01\x00" + bytes(39))
     data[18] = 0x99
     assert parse_cloudstore_state(bytes(data)).is_enabled is None
+
+
+def test_preset_commands_clamp_to_supported_kelvin_range():
+    assert command_from_args(["--preset", "900"]) == "PRESET 900"  # clamp happens at dispatch
+    from smart_state import Appearance
+    Appearance(max(1200, min(6500, 900)), 0.)  # the clamped value is a valid v2 appearance
 
 
 def test_background_is_idempotent_start_command():

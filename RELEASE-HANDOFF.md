@@ -37,7 +37,7 @@ Independent round-four review identified these follow-ups. A round-five worker a
 - Review this integrated commit, then run CI from a clean tagged source state.
 - Supply an owner-controlled Authenticode certificate; sign and timestamp all four PEs, then rebuild/reverify the exact archive.
 - Confirm Microsoft Visual C++ runtime redistribution eligibility or avoid bundling those DLLs.
-- Validate labeled Windows Settings/CloudStore ON/OFF state on supported builds; marker `0x10` remains unknown and fail-safe.
+- Validate labeled Windows Settings/CloudStore ON/OFF state on supported builds. The detector now parses the Bond CompactBinary structure (inner field 0 present = ON) instead of reading byte 18 as a marker; byte 18 is the inner payload length and differs per build (0x10/0x12 on 26200, 0x13/0x15 on older builds). Structures it cannot account for stay unknown and fail-safe.
 - Run the exact candidate in a disposable Windows account/VM and suitable spare display hardware: tray/menu, Explorer restart, real output/restoration, HDR, multiple monitors, mixed DPI, sleep/wake/logout/crash, startup, shortcuts/Jump List, update/removal, and legacy migration.
 - Run real second-user IPC/ACL checks and Narrator/NVDA/UIA accessibility validation.
 - Perform SmartScreen/AV reputation checks and final post-signing artifact verification.

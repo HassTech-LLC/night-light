@@ -44,7 +44,7 @@ Pure calculations must have no display, registry, network, or UI side effects. T
 ## Known technical risks
 
 - Windows Magnification color effects are process-global and can conflict with another application using the same mechanism.
-- Native Night Light detection relies on an undocumented CloudStore payload and can drift after Windows updates.
+- Native Night Light detection parses an undocumented CloudStore payload (Microsoft Bond CompactBinary v1; inner field 0 present means force-enabled). The parser fails closed to "unknown" on any structure it cannot account for, but the format itself can drift after Windows updates.
 - Local TCP IPC uses a random per-install token and bounded reads; migration from the legacy unauthenticated protocol still needs installed-upgrade testing.
 - Autostart behavior and crash recovery require additional fail-safe testing.
 - Software color attenuation is not the same as hardware backlight control and is not calibrated to m-EDI.

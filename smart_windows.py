@@ -35,7 +35,10 @@ class EmergencyHotkey:
 
     def _listen(self):
         self.thread_id=ctypes.windll.kernel32.GetCurrentThreadId()
-        self.active=bool(ctypes.windll.user32.RegisterHotKey(None,0x484e,0x4000|2|4,ord('N')))
+        # MOD_NOREPEAT|MOD_ALT|MOD_CONTROL|MOD_SHIFT + N. Ctrl+Shift+N alone is taken by
+        # Explorer (New folder), Chrome/Edge (InPrivate) and VS Code (New window);
+        # a global hotkey would silently steal it from every app while we run.
+        self.active=bool(ctypes.windll.user32.RegisterHotKey(None,0x484e,0x4000|1|2|4,ord('N')))
         self.ready.set()
         if not self.active:return
         message=wintypes.MSG()

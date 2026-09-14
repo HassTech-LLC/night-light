@@ -6,6 +6,12 @@ The project follows semantic versioning once a public release exists.
 
 ## Unreleased
 
+### Fixed
+
+- Windows Night Light detection now decodes the CloudStore record as Microsoft Bond CompactBinary (inner field 0 present = on) instead of treating byte 18 as a state marker. That byte is the inner payload length and differs by Windows build, so on Windows 11 build 26200 the native ON state (0x12) was reported as unknown. Structures the parser cannot account for still fail safe as unknown.
+- The emergency reset shortcut moved from Ctrl+Shift+N to Ctrl+Alt+Shift+N. A global Ctrl+Shift+N hotkey silently captured Explorer's New folder, Chrome/Edge InPrivate and VS Code's New window shortcuts while the app was running.
+- `--preset` and the `PRESET` localhost command clamp to the supported 1200-6500 K range; values below 1200 K previously raised inside Smart Comfort's appearance validation.
+
 ### Added
 
 - Formal HassTech repository and Spec Kit project structure.

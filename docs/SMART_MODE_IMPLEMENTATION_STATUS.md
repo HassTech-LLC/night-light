@@ -8,7 +8,7 @@ The following items previously listed as missing are now implemented:
 - Opt-in local inactivity/return timing estimates, seven-night minimum, latest 14 daily pairs, robust median/outlier filtering, confidence display, disable/reset and optional bedtime override. No content or application data. This is an inactivity proxy, not sleep measurement. Explicit winding-down/awake actions are available; automatic collection uses Windows idle timing rather than a separate lock/display-notification log.
 - Earlier-only adaptive evening guard and minimum 20-minute catch-up when a bedtime/learned guard applies.
 - User quiet-hours fallback and confident learned-window fallback when solar/location data is unavailable.
-- Ctrl+Shift+N global neutral reset on an owned Windows message thread, GUI-thread dispatch, unavailable-shortcut messaging and shutdown unregistration.
+- Ctrl+Alt+Shift+N global neutral reset on an owned Windows message thread, GUI-thread dispatch, unavailable-shortcut messaging and shutdown unregistration.
 - High-contrast detection stops Smart and restores neutral; the user must re-enable after disabling high contrast.
 - Native Location, Schedule, Learning and Guide tabs, including taskbar versus tray explanation and plain-language controls.
 

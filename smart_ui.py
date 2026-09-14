@@ -83,7 +83,7 @@ def show_smart_setup(parent, controller):
     label(box,'Left-click the tray icon or pinned shortcut to toggle. Right-click the tray icon to open controls. Smart setup reopens this guide.')
     label(box,'Warmth reduces blue output. Dimming changes software output, not monitor hardware brightness. Smart follows the evening curve; Manual keeps your settings.')
     label(box,'Manual adjustments hold for one hour. Pause returns original colors for one hour. Resume rejoins Smart. App Off / zero warmth stops automation until enabled again.')
-    label(box,'Emergency reset: Ctrl+Shift+N restores neutral and stops Smart while the app runs. If unavailable, use App Off in the flyout or taskbar Jump List. It cannot recover a crashed app.')
+    label(box,'Emergency reset: Ctrl+Alt+Shift+N restores neutral and stops Smart while the app runs. If unavailable, use App Off in the flyout or taskbar Jump List. It cannot recover a crashed app.')
     label(box,getattr(controller,'hotkey_status','Shortcut registration not checked in this session.'))
     label(box,'Windows Night Light on or unknown pauses this filter. No stacking. The app does not measure sleep or melatonin and is not medical treatment.')
     def save():
