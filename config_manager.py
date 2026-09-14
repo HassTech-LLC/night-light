@@ -1,4 +1,4 @@
-﻿"""
+"""
 Configuration and Windows integration manager for Night Light by HT.
 Handles JSON persistence with debouncing to prevent disk stutter during slider dragging.
 """
@@ -50,8 +50,11 @@ def config_file_lock(path):
     """Kernel byte lock shared by processes; automatically released on crash."""
     with open(str(path) + '.lock', 'a+b') as lock:
         if lock.seek(0, 2) == 0:
-            lock.write(b'0')
-            lock.flush()
+            try:
+                lock.write(b'0')
+                lock.flush()
+            except (PermissionError, OSError):
+                pass
         deadline = time.monotonic() + 10
         while True:
             lock.seek(0)
