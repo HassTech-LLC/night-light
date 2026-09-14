@@ -37,7 +37,7 @@ The default dark appearance is Night Light's charcoal-and-amber signature, with 
 ## Get started in a few minutes
 
 1. Visit the [official download page](https://hasstechapi.com/night-light/#download). Read the unsigned Early Access notice before downloading.
-2. Run **Night Light Early Access Setup** if you accept that limitation and your device policy allows it. Choose **Install**, then follow the completion steps. Microsoft Edge WebView2 Runtime is required.
+2. Run **Night Light Early Access Setup** if you accept that limitation and your device policy allows it. Choose **Install**, then follow the completion steps. Microsoft Edge WebView2 Runtime is required. For an unattended install or upgrade, run the setup with the standard `/S` switch from PowerShell or Command Prompt; it exits 0 on success and 2 if replacement stopped. (Git Bash rewrites `/S` into a path, so pass `//S` there.)
 3. Open Start → **Night Light Controls**. Choose Manual, or open **Schedule & preferences** to configure Smart Comfort.
 4. Choose your timing and evening targets. **Preview these targets for 20 seconds** is temporary. **Save and enable Smart** saves your schedule; wait for **Settings saved**, then check the display status separately.
 5. In Start, right-click **Night Light** → **Pin to taskbar**. Click the pinned moon to toggle; use **Night Light Controls** whenever you want settings.

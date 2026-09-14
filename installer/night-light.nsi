@@ -11,6 +11,12 @@ InstallDir "$LOCALAPPDATA\Programs\Night Light"
 !include "x64.nsh"
 !include "WinVer.nsh"
 !include "${PAYLOAD_INCLUDE}"
+; Unattended installs use the standard NSIS /S switch. Custom nsDialogs pages are
+; never created in silent mode, so no IfSilent guards are needed here. Do not add
+; a silent-mode override directive or /S stops working for scripted deployments.
+!ifndef APP_VERSION
+  !error "APP_VERSION must be defined by build_installer.py"
+!endif
 !define MUI_ICON "..\assets\app.ico"
 !define MUI_UNICON "..\assets\app.ico"
 Page custom WelcomePage
@@ -115,6 +121,12 @@ replacement_done:
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "DisplayName" "Night Light Early Access"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "DisplayVersion" "${APP_VERSION}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "Publisher" "HassTech"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "DisplayIcon" "$INSTDIR\app\NightLight.exe"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "URLInfoAbout" "https://hasstechapi.com/night-light/"
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "NoModify" 1
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "NoRepair" 1
   Goto install_done
 install_failed:
   SetErrorLevel 2

@@ -14,6 +14,7 @@ The project follows semantic versioning once a public release exists.
 
 ### Added
 
+- Setup registers DisplayVersion (from pyproject), Publisher, DisplayIcon, URLInfoAbout, NoModify and NoRepair so Windows Installed apps shows the version and publisher. Unattended `/S` install is documented and covered by a contract test.
 - Formal HassTech repository and Spec Kit project structure.
 - Reproducible Python dependency metadata and Windows CI definition.
 - Open-source contribution, security, privacy, architecture, and research documentation.

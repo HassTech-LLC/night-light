@@ -4,13 +4,16 @@ import re
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 from smart_mode import coordinates
+from build_identity import running_identity
+
+USER_AGENT='NightLightByHT/'+str(running_identity().get('version','dev'))
 
 
 def lookup_postal(country,postal,opener=urlopen):
     country=country.strip().lower();postal=postal.strip()
     if not re.fullmatch('[a-z]{2}',country) or not re.fullmatch(r'[A-Za-z0-9 -]{2,12}',postal):
         raise ValueError('Enter a two-letter country code and a valid postal code.')
-    request=Request(f'https://api.zippopotam.us/{country}/{quote(postal,safe="")}',headers={'User-Agent':'NightLightByHT/0.1'})
+    request=Request(f'https://api.zippopotam.us/{country}/{quote(postal,safe="")}',headers={'User-Agent':USER_AGENT})
     with opener(request,timeout=10) as response:
         payload=response.read(65537)
     if len(payload)>65536: raise ValueError('Location response too large.')

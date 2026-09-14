@@ -2,8 +2,10 @@
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path, PurePosixPath
 import subprocess
+import tomllib
 import zipfile
 from release import verify_release,source_manifest
 
@@ -11,6 +13,14 @@ ROOT=Path(__file__).resolve().parent
 
 
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def project_version():
+    """Setup DisplayVersion comes from pyproject so the two cannot drift."""
+    version=tomllib.loads((ROOT/'pyproject.toml').read_text(encoding='utf-8'))['project']['version']
+    if not re.fullmatch(r'\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?',version):
+        raise ValueError('Unsupported project version for setup metadata.')
+    return version
 
 
 def verify_toolchain(root):
@@ -74,9 +84,10 @@ def build_installer(archive,toolchain,output_dir):
                      '!define OWNERSHIP_SHA256 "'+digest(ownership)+'"']
         include=output_dir/'payload.nsh';include.write_text('\n'.join(directives)+'\n',encoding='utf-8')
     output=output_dir/'NightLightSetup-private.exe'
+    version=project_version()
     subprocess.run([str(toolchain/'makensis.exe'),'/INPUTCHARSET','UTF8','/WX','/V2',f'/DSETUP_OUTPUT={output}',
-                    f'/DPAYLOAD_INCLUDE={include}',str(ROOT/'installer/night-light.nsi')],check=True)
-    receipt=dict(private_candidate=True,installed=False,published=False,installer_sha256=digest(output),
+                    f'/DPAYLOAD_INCLUDE={include}',f'/DAPP_VERSION={version}',str(ROOT/'installer/night-light.nsi')],check=True)
+    receipt=dict(private_candidate=True,installed=False,published=False,version=version,installer_sha256=digest(output),
                  source_archive_sha256=digest(archive),compiler=lock,
                  script_sha256=digest(ROOT/'installer/night-light.nsi'))
     (output_dir/'SETUP-BUILD.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')

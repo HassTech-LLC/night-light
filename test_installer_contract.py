@@ -32,3 +32,21 @@ def test_private_setup_uses_verified_replacement_and_never_recursively_deletes()
     assert 'Delete "$INSTDIR\\Uninstall.exe"' in script
     assert 'ExecWait' not in script and 'MUI_FINISHPAGE_RUN' not in script
     assert 'remove-owned.ps1' in script and 'OWNERSHIP_SHA256' in script
+
+
+def test_private_setup_keeps_unattended_install_available():
+    script=(Path(__file__).parent/'installer/night-light.nsi').read_text()
+    # Standard /S must keep working for scripted deployments; only a SilentInstall
+    # override or a MessageBox without /SD in the install path would break it.
+    import re
+    assert not re.search(r'^\s*SilentInstall',script,re.M)
+    install=script[script.index('Section "Install"'):script.index('Section "Uninstall"')]
+    assert all('/SD' in line for line in install.splitlines() if 'MessageBox' in line)
+
+
+def test_private_setup_registers_installed_apps_metadata():
+    from build_installer import project_version
+    script=(Path(__file__).parent/'installer/night-light.nsi').read_text()
+    for value in ('"DisplayVersion" "${APP_VERSION}"','"Publisher" "HassTech"','"DisplayIcon"','"NoModify" 1','"NoRepair" 1'):
+        assert value in script
+    assert project_version()=='0.2.0'
