@@ -49,4 +49,5 @@ def test_private_setup_registers_installed_apps_metadata():
     script=(Path(__file__).parent/'installer/night-light.nsi').read_text()
     for value in ('"DisplayVersion" "${APP_VERSION}"','"Publisher" "HassTech"','"DisplayIcon"','"NoModify" 1','"NoRepair" 1'):
         assert value in script
-    assert project_version()=='0.2.0'
+    import re
+    assert re.fullmatch(r'\d+\.\d+\.\d+',project_version())

@@ -8,7 +8,7 @@
 <a href="https://hasstechapi.com/night-light/#app-preview">See the app</a>
 </p>
 
-> **Unsigned Early Access · 0.2.0 · Windows 11 x64**  
+> **Unsigned Early Access · 0.2.1 · Windows 11 x64**  
 > Windows cannot verify the installer's publisher. SmartScreen may warn or block installation. Never disable Windows Security to install Night Light. The download page provides the current file, checksum, requirements, and limitations.
 
 ## A small app, thoughtfully arranged

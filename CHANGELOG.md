@@ -4,7 +4,7 @@ All notable changes to Night Light by HT will be documented here.
 
 The project follows semantic versioning once a public release exists.
 
-## Unreleased
+## 0.2.1 - 2026-09-14 (unsigned Early Access)
 
 ### Fixed
 
@@ -15,6 +15,11 @@ The project follows semantic versioning once a public release exists.
 ### Added
 
 - Setup registers DisplayVersion (from pyproject), Publisher, DisplayIcon, URLInfoAbout, NoModify and NoRepair so Windows Installed apps shows the version and publisher. Unattended `/S` install is documented and covered by a contract test.
+
+## 0.2.0 - 2026-09-11 (unsigned Early Access)
+
+### Added
+
 - Formal HassTech repository and Spec Kit project structure.
 - Reproducible Python dependency metadata and Windows CI definition.
 - Open-source contribution, security, privacy, architecture, and research documentation.
