@@ -8,7 +8,7 @@
 <a href="https://hasstechapi.com/night-light/#app-preview">See the app</a>
 </p>
 
-> **Unsigned Early Access · 0.2.1 · Windows 11 x64**  
+> **Unsigned Early Access · 0.3.0 · Windows 11 x64**  
 > Windows cannot verify the installer's publisher. SmartScreen may warn or block installation. Never disable Windows Security to install Night Light. The download page provides the current file, checksum, requirements, and limitations.
 
 ## A small app, thoughtfully arranged
@@ -92,6 +92,8 @@ Night Light stays free for everyone. Optional support helps fund development, Wi
 
 ## License
 
-Night Light is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). You may use, study, modify, and redistribute the software for noncommercial purposes. Commercial use—including resale, paid redistribution, or bundling it into a product or service sold for money—requires separate written permission from HassTech.
+Night Light is free software under the [GNU General Public License version 3 or later](LICENSE). You may use, study, modify, redistribute, and sell it, provided you pass on the same freedoms: anyone you give it to receives the source and the same rights.
 
-This is a noncommercial source-available license, not an OSI-approved open-source license. See [NOTICE](NOTICE) for the required copyright notice. Third-party components keep their own licenses as listed in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+The control surface is hosted in WebView2, so [NOTICE](NOTICE) grants an additional permission under GPL section 7 covering the Microsoft Edge WebView2 SDK and Runtime. Third-party components keep their own licenses as listed in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+
+Releases up to 0.2.0 were distributed under the PolyForm Noncommercial License, and earlier copies under MIT. Those grants are not withdrawn; the change applies from 0.3.0 onward.

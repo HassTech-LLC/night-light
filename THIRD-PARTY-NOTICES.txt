@@ -1,9 +1,10 @@
 Night Light — Third-Party Notices
 =================================
 
-This file applies to the Windows distribution of Night Light 0.2.0 built with
+This file applies to the Windows distribution of Night Light 0.3.0 built with
 CPython 3.14.7 from astral-sh/python-build-standalone release 20260901. The
-application's own copyright and PolyForm Noncommercial license remain in LICENSE and are not
+application's own copyright, its GNU General Public License version 3 or later,
+and the WebView2 additional permission remain in LICENSE and NOTICE and are not
 replaced or modified by this notice.
 
 Shipped application and runtime components

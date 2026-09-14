@@ -4,7 +4,12 @@ All notable changes to Night Light by HT will be documented here.
 
 The project follows semantic versioning once a public release exists.
 
-## 0.2.1 - 2026-09-14 (unsigned Early Access)
+## 0.3.0 - 2026-09-14 (unsigned Early Access)
+
+### Changed
+
+- **License changed to the GNU General Public License version 3 or later.** Night Light is now OSI-approved free software: use, study, modify, redistribute, and sell it, provided recipients receive the source and the same rights. `NOTICE` adds a GPL section 7 additional permission covering the Microsoft Edge WebView2 SDK and Runtime, which host the control surface. Copies already distributed under PolyForm Noncommercial or MIT keep the rights granted to them; the change applies from 0.3.0 onward. The immediate reason is eligibility for free code signing through the SignPath Foundation, which requires an OSI-approved license.
+- `CONTRIBUTING.md` now states that contributions are licensed under the GPL and that copyright is assigned to HassTech, so the project can be relicensed in future without tracing every contributor.
 
 ### Fixed
 

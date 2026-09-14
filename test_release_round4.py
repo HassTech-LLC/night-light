@@ -197,5 +197,5 @@ def test_release_sbom_uses_the_single_project_version(tmp_path):
     dist=tmp_path/'dist';dist.mkdir();(dist/'NightLight.exe').write_bytes(b'fixture')
     document=sbom_document({'files':[{'path':'main.py','sha256':'a'*64,'size':1}]},dist)
     app=next(row for row in document['components'] if row['name']=='Night Light')
-    assert app['version']==project_version()=='0.2.1'
+    assert app['version']==project_version()=='0.3.0'
     assert document['metadata']['component']['version']==project_version()

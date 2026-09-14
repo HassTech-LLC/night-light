@@ -140,7 +140,7 @@ def project_version() -> str:
 def sbom_document(manifest: dict, dist: Path) -> dict:
     app_version = project_version()
     components = [
-        ("application", "Night Light", app_version, "PolyForm-Noncommercial-1.0.0", None),
+        ("application", "Night Light", app_version, "GPL-3.0-or-later", None),
         ("framework", "CPython", "3.14.7", "Python-2.0", "pkg:generic/cpython@3.14.7"),
         ("framework", "python-build-standalone", "20260901", "MPL-2.0", "pkg:github/astral-sh/python-build-standalone@20260901"),
         ("library", "OpenSSL", "3.5.8", "Apache-2.0", "pkg:generic/openssl@3.5.8"),

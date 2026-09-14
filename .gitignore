@@ -45,3 +45,7 @@ assets/BUILD-IDENTITY.json
 # Local HassTech portfolio memory wiring (contains workstation paths)
 AGENTS.md
 GEMINI.md
+
+# Local knowledge-graph output and release staging
+graphify-out/
+release/
