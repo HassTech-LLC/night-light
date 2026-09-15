@@ -13,7 +13,7 @@ Revision 2 records the licence decision: the project moved from PolyForm Noncomm
 | Public source | `main` at `a98a2aa`; CI green on unsigned build, SBOM, checksums; full suite 546 passed, 1 skipped |
 | Detector | Structural Bond CompactBinary parser, verified against published ON/OFF fixtures and this host's live OFF payload. Paired live ON capture on build 26200 still missing |
 | Installed app | 0.3.0 installed here from the exact public artifact via silent install; reports DisplayVersion 0.3.0 and ships the GPL in its payload |
-| Website | 0.2.0 file live; 0.3.0 staged on site branch `release/night-light-0.3.0-early-access`, awaiting deploy approval |
+| Website | 0.3.0 deployed and live, verified by hash from the public URL. Installer bytes now served from GitHub Releases via an edge redirect (Track F) |
 | Signing | None yet. SignPath Foundation application drafted at [SIGNPATH_APPLICATION.md](SIGNPATH_APPLICATION.md), not submitted |
 | Contract gates | FR-013, FR-017, FR-018, NFR-002, NFR-005 BLOCKED; FR-009, FR-010, FR-020 IN_PROGRESS (from `candidate-0.2.0-local2/release-requirements.json`) |
 
@@ -93,9 +93,21 @@ Usability: twelve to twenty consenting adults, unassisted critical tasks at or a
 
 Soak: fourteen dated real nights on a consenting test machine, logging candidate identity, schedule, applied output, overrides, sleep and wake, and any recovery. Simulated timestamps do not count.
 
-## Track F - Distribution hygiene (R022, R029, R030)
+## Track F - Distribution hygiene (R022, R029, R030) - DONE 2026-09-15
 
-The installer is currently committed into the site repository as a 21 MB binary per release. Two published releases in, that is already over 40 MB of history that cannot be removed without a rewrite. Move release bytes to GitHub Releases on the app repository, or to R2, and have the site manifest point at that immutable URL, keeping the release check script verifying size and hash against the fetched file. Do this before the signed release so the signed bytes never enter git.
+Release bytes no longer enter the website repository. Completed and verified end to end:
+
+- GitHub Release `v0.3.0` on `HassTech-LLC/night-light`, tagged at `a98a2aa`, marked pre-release, carrying the installer and its checksum file. The Corresponding Source sits beside the binary, which also strengthens the GPL posture.
+- The public URL is unchanged. `public/_redirects` sends `/downloads/NightLightSetup-0.3.0-Early-Access.exe` to the release asset with a 302, so existing links, the manifest and the install guide keep working.
+- The website keeps only the small published checksum files, which are what users verify against and should come from the same origin as the page.
+- `check-night-light-release.mjs` still hashes a locally hosted installer when one exists, and otherwise requires a redirect bound to the manifest version and filename plus an agreeing checksum file. The integrity contract survives without the bytes.
+- `check-night-light-download.mjs` is a new post-deploy check that fetches the live URL, follows the redirect and proves the served bytes match.
+
+Verified after deploy: the live URL returns 302, resolves through GitHub to the release asset, and delivers 21,502,169 bytes at `bd3436c6...badb`, matching the manifest exactly.
+
+0.2.0 deliberately stays a static asset. It predates the public source sync, so no commit can honestly be tagged as its build, and inventing a tag would misrepresent provenance.
+
+The signed release must follow this pattern so signed bytes never enter git.
 
 Promotion: R027 gate receipt, R028 exact-artifact approval by Hassan, R029 clean-browser live verification, R030 vault and documentation handoff with the shipped identity and withdrawal plan.
 
