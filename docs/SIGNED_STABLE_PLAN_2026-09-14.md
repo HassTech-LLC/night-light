@@ -11,7 +11,7 @@ Revision 2 records the licence decision: the project moved from PolyForm Noncomm
 |---|---|
 | Licence | GNU GPL version 3 or later from 0.3.0, with a section 7 additional permission for the Microsoft Edge WebView2 SDK and Runtime in `NOTICE`. OSI-approved, so SignPath-eligible |
 | Public source | `main` at `a98a2aa`; CI green on unsigned build, SBOM, checksums; full suite 546 passed, 1 skipped |
-| Detector | Structural Bond CompactBinary parser, verified against published ON/OFF fixtures and this host's live OFF payload. Paired live ON capture on build 26200 still missing |
+| Detector | Structural Bond CompactBinary parser, verified against published fixtures and paired live ON/OFF captures taken on build 26200 on 2026-09-15. R011's detector row is closed |
 | Installed app | 0.3.0 installed here from the exact public artifact via silent install; reports DisplayVersion 0.3.0 and ships the GPL in its payload |
 | Website | 0.3.0 deployed and live, verified by hash from the public URL. Installer bytes now served from GitHub Releases via an edge redirect (Track F) |
 | Signing | None yet. SignPath Foundation application drafted at [SIGNPATH_APPLICATION.md](SIGNPATH_APPLICATION.md), not submitted |
@@ -33,7 +33,7 @@ SignPath review is the long pole, and fourteen real nights cannot start until a 
 
 | Step | Owner | Unblocks | Evidence |
 |---|---|---|---|
-| Turn Windows Night Light on, run the read-only detector check, turn it off, run again. Keep both payloads as fixtures | Hassan, ten seconds | Closes the last unverified safety claim in R011 | `test_windows_nightlight.py` fixtures; vault pending item |
+| ~~Capture paired Windows Night Light ON/OFF payloads~~ DONE 2026-09-15 | Claude | Closes the detector row of R011 | Three live captures committed as fixtures in `test_windows_nightlight.py` |
 | ~~Deploy 0.3.0 to the website~~ DONE 2026-09-14 | Hassan | Public users no longer receive the byte-18 detector or the old hotkey, and now receive the GPL grant | Site PR #22, CI green |
 | ~~Verify the live download~~ DONE 2026-09-15 | Claude | Confirms the published bytes are the built bytes | Live URL delivers 21,502,169 bytes at `bd3436c6...badb`; `npm run check:night-light-download` passes |
 | Remove the stale Desktop extract and the install-root rollback folder | Hassan, tool policy blocks agent deletes | Housekeeping only | none |
