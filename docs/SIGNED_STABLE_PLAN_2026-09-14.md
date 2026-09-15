@@ -34,8 +34,8 @@ SignPath review is the long pole, and fourteen real nights cannot start until a 
 | Step | Owner | Unblocks | Evidence |
 |---|---|---|---|
 | Turn Windows Night Light on, run the read-only detector check, turn it off, run again. Keep both payloads as fixtures | Hassan, ten seconds | Closes the last unverified safety claim in R011 | `test_windows_nightlight.py` fixtures; vault pending item |
-| Approve deploy of site branch `release/night-light-0.3.0-early-access` | Hassan | Public users stop receiving the byte-18 detector and the old hotkey, and start receiving the GPL grant | Site CI run; live download hash equals `bd3436c6...badb`, 21,502,169 bytes |
-| After deploy: clean-browser download, hash check, silent install on a spare account | Claude | R029-style live verification for Early Access | `audit/public-release/candidate-0.3.0/live/` |
+| ~~Deploy 0.3.0 to the website~~ DONE 2026-09-14 | Hassan | Public users no longer receive the byte-18 detector or the old hotkey, and now receive the GPL grant | Site PR #22, CI green |
+| ~~Verify the live download~~ DONE 2026-09-15 | Claude | Confirms the published bytes are the built bytes | Live URL delivers 21,502,169 bytes at `bd3436c6...badb`; `npm run check:night-light-download` passes |
 | Remove the stale Desktop extract and the install-root rollback folder | Hassan, tool policy blocks agent deletes | Housekeeping only | none |
 
 ## Track A - Code signing through SignPath Foundation (R021)
