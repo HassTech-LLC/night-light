@@ -64,6 +64,10 @@ Done locally on 2026-09-15, no VM required:
 - Recovery repeats without divergence: running setup twice after an interrupted transaction reaches byte-identical state with no residue and an empty `pending_cleanup`.
 - Already covered previously: file-lock contention with and without early release, tampered or changed installations stopping before replacement, and owned-uninstall ownership rules in `test_owned_removal.py`.
 
+A defect was found while reasoning about the disposable-image case and fixed before any VM existed: five of the six installer dialogs had no `/SD` silent default, so an unattended `/S` deployment would hang on an invisible prompt whenever a precondition failed, most obviously on a machine without the WebView2 runtime. The contract test had scanned only the install section and so missed the four dialogs in `.onInit`.
+
+**Environment prepared 2026-09-15.** Hyper-V and Windows Sandbox are enabled on the host and awaiting a reboot. No third-party agent-VM project is used: those are benchmark harnesses, mostly Linux-hosted, and would stack Docker and nested virtualisation beneath the Windows APIs under test. Windows Sandbox needs no image and ships without WebView2, so it covers the missing-runtime row directly. Hyper-V supplies checkpoints for the rest and needs a Windows 11 image.
+
 Still needs a disposable Windows image, because these exercise the operating system rather than the transaction logic:
 
 1. Clean install of the live 0.3.0 file, first pin, save and enable Smart, uninstall; inventory before and after.
