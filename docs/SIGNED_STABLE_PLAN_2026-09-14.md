@@ -1,6 +1,6 @@
 # Signed stable completion plan
 
-Date: 2026-09-14. Revision 2. Source revision at writing: `a98a2aa` (0.3.0 unsigned Early Access, GPL-3.0-or-later).
+Date: 2026-09-14. Revision 3 (2026-09-15). Source revision at writing: `a98a2aa` (0.3.0 unsigned Early Access, GPL-3.0-or-later).
 Companion to [Public release execution contract](../specs/002-smart-comfort-completion/PUBLIC_RELEASE_EXECUTION_CONTRACT.md), whose R-series tasks remain the audit-closure checklist. This document sequences the open R-tasks into tracks, names what unblocks each, and states what can run in parallel. It adds no new product direction.
 
 Revision 2 records the licence decision: the project moved from PolyForm Noncommercial to the GNU GPL version 3 or later so it qualifies for free code signing. The paid-certificate options in revision 1 are no longer the plan.
@@ -10,7 +10,7 @@ Revision 2 records the licence decision: the project moved from PolyForm Noncomm
 | Item | State on 2026-09-14 |
 |---|---|
 | Licence | GNU GPL version 3 or later from 0.3.0, with a section 7 additional permission for the Microsoft Edge WebView2 SDK and Runtime in `NOTICE`. OSI-approved, so SignPath-eligible |
-| Public source | `main` at `01b7b24`; CI green on unsigned build, SBOM, checksums; full suite 548 passed, 1 skipped |
+| Public source | `main` at `98b4bf4`; CI green on unsigned build, SBOM, checksums; full suite 559 passed, 1 skipped |
 | Detector | Structural Bond CompactBinary parser, verified against published fixtures and paired live ON/OFF captures taken on build 26200 on 2026-09-15. R011's detector row is closed |
 | Installed app | 0.3.0 installed here from the exact public artifact via silent install; reports DisplayVersion 0.3.0 and ships the GPL in its payload |
 | Website | 0.3.0 deployed and live, verified by hash from the public URL. Installer bytes now served from GitHub Releases via an edge redirect (Track F) |
@@ -55,17 +55,23 @@ Exit: a tagged CI run produces a signed, timestamped installer whose hash is rec
 
 ## Track B - Disposable Windows lifecycle (R012 to R015, R023)
 
-Needs Hyper-V or VirtualBox with a Windows 11 evaluation image, snapshot capability, and a second local user. Runs in parallel with Track A.
+Revision 3 correction: this track was wrongly described as entirely VM-blocked. R012's isolated fault harness already exists and `test_upgrade_installation.py` drives the real PowerShell upgrade against synthetic payloads confined by a sentinel test root. The journal-interruption rows were testable all along, and are now done.
 
-Each row starts from a fresh snapshot, with evidence under `audit/public-release/candidate-0.3.0/installer/`:
+Done locally on 2026-09-15, no VM required:
+
+- Interrupted upgrade at **every** journal phase, including the postcommit `committed` phase that was previously untested. Precommit failures restore a single coherent install; a crash leaves no transaction record behind.
+- Postcommit failure keeps the new payload live and finishes cleanup forward on the next run, rather than rolling back against durable state.
+- Recovery repeats without divergence: running setup twice after an interrupted transaction reaches byte-identical state with no residue and an empty `pending_cleanup`.
+- Already covered previously: file-lock contention with and without early release, tampered or changed installations stopping before replacement, and owned-uninstall ownership rules in `test_owned_removal.py`.
+
+Still needs a disposable Windows image, because these exercise the operating system rather than the transaction logic:
 
 1. Clean install of the live 0.3.0 file, first pin, save and enable Smart, uninstall; inventory before and after.
 2. Upgrade from the live 0.2.0 file to 0.3.0; preferences and pins preserved.
-3. Interrupted upgrade at each journal phase using the upgrade script's failure-injection switch under the isolated test root; rerun recovers twice without divergence.
-4. Process kill mid-copy and abrupt power-off mid-transaction; the next run recovers.
-5. Missing WebView2 runtime; setup stops without changing the app and links to Microsoft.
-6. Second user on the same machine; IPC endpoint ownership and config isolation.
-7. Same-version repair, stale legacy pin from the Antigravity prototype, disk-full during commit.
+3. Abrupt power loss mid-transaction. The harness proves the journal survives a killed process; it cannot prove behaviour across an unflushed disk cache.
+4. Missing WebView2 runtime; setup stops without changing the app and links to Microsoft.
+5. Second user on the same machine; IPC endpoint ownership and config isolation.
+6. Disk-full during commit, and a stale legacy pin from the Antigravity prototype.
 
 Exit: one current usable installation or an explicit recoverable no-install in every row, with no orphan launchable payload.
 
@@ -79,11 +85,23 @@ Exit: the supported-hardware table on the site lists only rows with receipts, an
 
 ## Track D - Accessibility and performance (R018)
 
-Needs NVDA and Narrator, 125, 150 and 200 percent scaling, and a stopwatch.
+The performance half needed no hardware and is done. The accessibility half still needs screen readers and a person to observe them.
 
-Rows: keyboard-only traversal of the controls window with visible focus order; screen reader announcements for mode, warmth, dimming, save state, and the display status line; Windows high contrast, where Smart must stop and say so; reduced motion; large text. Performance: cold and warm open p95 over ten samples, save latency, and process-tree memory at start and after eight hours resident.
+Measured 2026-09-15 on the installed 0.3.0 build with `tools/measure_command_latency.py`. Three passes of ten samples of the `--show` command roundtrip, chosen because it never changes display output:
 
-Exit: defects filed and closed, with raw samples committed under `qualification/`.
+| Pass | Median | p95 | Memory growth |
+|---|---|---|---|
+| 1 | 873 ms | 986 ms | 48.0 MB |
+| 2 | 849 ms | 952 ms | 2.9 MB |
+| 3 | 873 ms | 895 ms | 0 bytes |
+
+No failures in thirty samples. The first-pass growth is the WebView2 host starting; growth converges to zero, so there is no leak across repeated open cycles.
+
+Two honesty constraints on these numbers. They measure command process spawn to exit including endpoint acknowledgement, **not** input-to-photon latency or the moment the window is visually complete, so they must never be quoted as "open time". And ten samples cannot resolve a true p95: the reported figure is the largest sample, which `test_command_latency_tool.py` pins deliberately.
+
+Still open, needs NVDA plus a human observer, at 125, 150 and 200 percent scaling: keyboard-only traversal with visible focus order; screen reader announcements for mode, warmth, dimming, save state and the display status line; Windows high contrast, where Smart must stop and say so; reduced motion; large text. Also outstanding: the eight-hour resident memory figure, which is elapsed time rather than effort.
+
+Exit: defects filed and closed, with raw samples under `audit/public-release/candidate-0.3.0/qualification/`.
 
 ## Track E - Usability and fourteen nights (R025, R026)
 

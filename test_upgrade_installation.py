@@ -176,3 +176,65 @@ def test_file_lock_retries_then_succeeds_or_safely_stops(upgrade,release_early):
     else:
         assert result.returncode==2
         assert (old/'NightLight.exe').exists() and not (installed/'app').exists()
+
+
+def _state(installed):
+    return json.loads((installed/'INSTALLATION.json').read_text(encoding='utf-8'))
+
+
+def test_postcommit_failure_keeps_the_new_payload_and_does_not_roll_back(upgrade):
+    """After the commit marker, recovery must finish forward, never backward.
+
+    A failure between committing the new installation state and finishing the
+    cleanup of the superseded payload leaves durable evidence that the new app
+    is the current one. Rolling back there would contradict the state already
+    written to disk.
+    """
+    old,incoming,installed,run=upgrade
+    assert run().returncode==0
+    expected=(incoming/'NightLight.exe').read_bytes()
+
+    crashed=run(point='committed',crash=True)
+    assert crashed.returncode==91
+
+    # The new payload is live even though cleanup did not finish.
+    assert (installed/'app'/'NightLight.exe').read_bytes()==expected
+    assert _state(installed)['receipt_sha256']
+
+    recovered=run()
+    assert recovered.returncode==0,recovered.stderr
+    assert list(installed.rglob('NightLight.exe'))==[installed/'app'/'NightLight.exe']
+    assert not list(installed.glob('.previous-*'))
+    assert not (installed/'INSTALL-TRANSACTION.json').exists()
+    # Cleanup is only finished when nothing is still owed.
+    assert _state(installed)['pending_cleanup']==[]
+
+
+@pytest.mark.parametrize('point',['prepared','previous_reserved','replacement_promoted',
+                                  'integration_updated','committed'])
+def test_recovery_repeats_without_divergence(upgrade,point):
+    """R013: recovery is idempotent, at every journal phase including postcommit.
+
+    Running setup twice after an interrupted transaction must reach the same
+    state the second time, with no residue accumulating across attempts.
+    """
+    old,incoming,installed,run=upgrade
+    assert run().returncode==0
+    assert run(point=point,crash=True).returncode==91
+
+    first=run()
+    assert first.returncode==0,first.stderr
+    after_first=_state(installed)
+    payload_first=(installed/'app'/'NightLight.exe').read_bytes()
+
+    second=run()
+    assert second.returncode==0,second.stderr
+    after_second=_state(installed)
+
+    assert after_first==after_second
+    assert (installed/'app'/'NightLight.exe').read_bytes()==payload_first
+    assert list(installed.rglob('NightLight.exe'))==[installed/'app'/'NightLight.exe']
+    assert not list(installed.glob('.previous-*'))
+    assert not list(installed.glob('.interrupted-data-*'))
+    assert not (installed/'INSTALL-TRANSACTION.json').exists()
+    assert after_second['pending_cleanup']==[]
