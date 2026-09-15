@@ -35,13 +35,29 @@ def test_private_setup_uses_verified_replacement_and_never_recursively_deletes()
 
 
 def test_private_setup_keeps_unattended_install_available():
-    script=(Path(__file__).parent/'installer/night-light.nsi').read_text()
-    # Standard /S must keep working for scripted deployments; only a SilentInstall
-    # override or a MessageBox without /SD in the install path would break it.
+    """Every dialog needs a silent default, not only those in Section Install.
+
+    NSIS still shows a MessageBox during a silent install unless /SD supplies
+    the answer. An earlier version of this test scanned only Section "Install",
+    which missed the four dialogs in .onInit. A machine without the WebView2
+    runtime, or on an unsupported OS, would then hang forever on an invisible
+    prompt during an unattended deployment.
+    """
     import re
-    assert not re.search(r'^\s*SilentInstall',script,re.M)
-    install=script[script.index('Section "Install"'):script.index('Section "Uninstall"')]
-    assert all('/SD' in line for line in install.splitlines() if 'MessageBox' in line)
+    script=(Path(__file__).parent/'installer/night-light.nsi').read_text()
+    assert not re.search(r'^\s*SilentInstall', script, re.M)
+    missing=[line.strip() for line in script.splitlines()
+             if 'MessageBox' in line and '/SD' not in line]
+    assert not missing, f'dialogs without a silent default: {missing}'
+
+
+def test_webview2_prompt_declines_and_stops_when_silent():
+    """Silent setup must stop cleanly rather than open a browser unattended."""
+    script=(Path(__file__).parent/'installer/night-light.nsi').read_text()
+    prompt=next(line for line in script.splitlines()
+                if 'WebView2 Runtime' in line and 'MessageBox' in line)
+    assert '/SD IDNO' in prompt
+    assert 'IDNO stop_setup' in prompt
 
 
 def test_private_setup_registers_installed_apps_metadata():

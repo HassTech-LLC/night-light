@@ -4,6 +4,12 @@ All notable changes to Night Light by HT will be documented here.
 
 The project follows semantic versioning once a public release exists.
 
+## Unreleased
+
+### Fixed
+
+- **Unattended `/S` install could hang on an invisible dialog.** Five of the six installer dialogs had no `/SD` silent-mode default, and NSIS still displays such a dialog during a silent install. On a machine missing the Microsoft Edge WebView2 Runtime, or on an unsupported Windows version, or while another setup was open, a scripted deployment would wait forever on a prompt nobody could see. The WebView2 prompt now declines by default so silent setup stops cleanly without opening a browser, and the remaining stop dialogs default to OK. The contract test previously scanned only the install section, which is why it missed the four dialogs in `.onInit`; it now scans the whole script and is mutation-checked.
+
 ## 0.3.0 - 2026-09-14 (unsigned Early Access)
 
 ### Changed

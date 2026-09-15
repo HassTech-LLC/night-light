@@ -73,11 +73,11 @@ Function .onInit
   SetShellVarContext current
   StrCpy $INSTDIR "$LOCALAPPDATA\Programs\Night Light"
   ${IfNot} ${RunningX64}
-    MessageBox MB_ICONSTOP "This candidate requires Windows 11 on an x64 computer."
+    MessageBox MB_ICONSTOP "This candidate requires Windows 11 on an x64 computer." /SD IDOK
     Abort
   ${EndIf}
   ${IfNot} ${AtLeastWin11}
-    MessageBox MB_ICONSTOP "This candidate requires Windows 11."
+    MessageBox MB_ICONSTOP "This candidate requires Windows 11." /SD IDOK
     Abort
   ${EndIf}
   System::Call 'kernel32::CreateMutexW(p 0, i 0, w "Local\HassTech.NightLight.Setup") p.r0'
@@ -85,7 +85,7 @@ Function .onInit
   IntCmp $1 183 busy
   Goto check_runtime
 busy:
-  MessageBox MB_ICONSTOP "Another Night Light setup is open. Close it before continuing."
+  MessageBox MB_ICONSTOP "Another Night Light setup is open. Close it before continuing." /SD IDOK
   Abort
 check_runtime:
   SetRegView 32
@@ -97,7 +97,7 @@ user_runtime:
   StrCmp $0 "" missing_runtime
   StrCmp $0 "0.0.0.0" missing_runtime ready
 missing_runtime:
-  MessageBox MB_YESNO|MB_ICONINFORMATION "Night Light needs Microsoft Edge WebView2 Runtime. Setup will stop without changing your app.$\r$\n$\r$\nOpen Microsoft's official download page? You can also obtain its offline installer there." IDNO stop_setup
+  MessageBox MB_YESNO|MB_ICONINFORMATION "Night Light needs Microsoft Edge WebView2 Runtime. Setup will stop without changing your app.$\r$\n$\r$\nOpen Microsoft's official download page? You can also obtain its offline installer there." /SD IDNO IDNO stop_setup
   ExecShell "open" "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 stop_setup:
   Abort
@@ -144,7 +144,7 @@ Section "Uninstall"
   nsExec::ExecToLog '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -File "$PLUGINSDIR\remove-owned.ps1" -ReceiptSha256 ${OWNERSHIP_SHA256}'
   Pop $0
   StrCmp $0 "0" removed
-  MessageBox MB_ICONSTOP "Removal could not be completed. Close Night Light and review the setup log. Changed or unrecognized files and your preferences are preserved."
+  MessageBox MB_ICONSTOP "Removal could not be completed. Close Night Light and review the setup log. Changed or unrecognized files and your preferences are preserved." /SD IDOK
   Abort
 removed:
   ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\HassTechNightLight" "InstallLocation"
