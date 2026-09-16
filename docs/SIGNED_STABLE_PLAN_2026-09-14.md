@@ -64,7 +64,16 @@ Done locally on 2026-09-15, no VM required:
 - Recovery repeats without divergence: running setup twice after an interrupted transaction reaches byte-identical state with no residue and an empty `pending_cleanup`.
 - Already covered previously: file-lock contention with and without early release, tampered or changed installations stopping before replacement, and owned-uninstall ownership rules in `test_owned_removal.py`.
 
-A defect was found while reasoning about the disposable-image case and fixed before any VM existed: five of the six installer dialogs had no `/SD` silent default, so an unattended `/S` deployment would hang on an invisible prompt whenever a precondition failed, most obviously on a machine without the WebView2 runtime. The contract test had scanned only the install section and so missed the four dialogs in `.onInit`.
+**Windows Sandbox row done 2026-09-15.** Sandbox ships without the WebView2 Runtime, so it exercises the missing-runtime row directly and needs no image. Both the published 0.3.0 installer and a rebuild carrying the silent-default fix correctly refused to install and exited 2, which is the required behaviour.
+
+The comparison also measured the defect that prompted the fix. Five of the six installer dialogs had no `/SD` silent default, so NSIS displayed them during a silent install:
+
+| Build | Elapsed | Visible window | Spawned | Installed |
+|---|---|---|---|---|
+| Published 0.3.0 | 11.6 s, then 30.3 s | yes | SmartScreen, WerFault | no |
+| Rebuilt with `/SD` | 0.4 s, then 1.1 s | none | none | no |
+
+The published build tries to open the download page unattended, which is what SmartScreen indicates. I had described this as hanging forever; it did not hang in Sandbox, and that wording has been corrected in the CHANGELOG. Whether it can block indefinitely is environment-dependent and unproven. Evidence under `audit/public-release/candidate-0.3.0/installer/`.
 
 **Environment prepared 2026-09-15.** Hyper-V and Windows Sandbox are enabled on the host and awaiting a reboot. No third-party agent-VM project is used: those are benchmark harnesses, mostly Linux-hosted, and would stack Docker and nested virtualisation beneath the Windows APIs under test. Windows Sandbox needs no image and ships without WebView2, so it covers the missing-runtime row directly. Hyper-V supplies checkpoints for the rest and needs a Windows 11 image.
 
