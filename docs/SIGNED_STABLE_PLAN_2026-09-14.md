@@ -88,11 +88,28 @@ The published build tries to open the download page unattended, which is what Sm
 
 Incidental confirmation: 0.2.0 reports no DisplayVersion in Installed apps, and the upgrade populates it. That is the metadata gap fixed earlier, observed end to end.
 
-Still needs a Hyper-V VM, because these exercise the operating system rather than the transaction logic:
+### Still open, and the VM attempt that did not succeed
+
+Three rows genuinely need a virtual machine, because they exercise the operating system rather than the transaction logic:
 
 1. Abrupt power loss mid-transaction. The harness proves the journal survives a killed process; it cannot prove behaviour across an unflushed disk cache.
 2. Second user on the same machine; IPC endpoint ownership and config isolation.
 3. Disk-full during commit, and a stale legacy pin from the Antigravity prototype.
+
+A Hyper-V VM was attempted on 2026-09-15 and abandoned after four approaches failed. Recorded so the next attempt does not repeat them:
+
+| Approach | Outcome |
+|---|---|
+| Apply `install.wim` to a VHDX, then `bcdboot` | Image applied fine. `bcdboot` failed to create the boot store: first `c0000035` from a half-written store plus a stale loaded hive, then `c000000d` on the template even using the image's own `bcdboot` rather than the host's newer one |
+| Unattended Setup with `autounattend.xml` on an attached FAT32 disk | Windows 11 25H2 Setup never picked it up and stopped at the language page. The new Setup does not scan attached disks the way older versions did |
+| `Shift+F10` to reach WinPE's command prompt and run a staged installer | The keystroke, sent via the Hyper-V WMI keyboard, did not open a prompt |
+| Answering the "press any key to boot from CD" prompt | This part worked. `Msvm_Keyboard.TypeKey` reliably answers it, and `TypeText` is available for longer input |
+
+What was proven useful and is worth reusing: guest console screenshots via `Msvm_VirtualSystemManagementService.GetVirtualSystemThumbnailImage`, remembering the returned buffer carries a four-byte header before the RGB565 pixels. That is what revealed Setup was stuck, after disk-growth inference had been misleading.
+
+The retained ISO is `Win11_25H2_English_x64_v2.iso`, 7.89 GB, SHA-256 `768984706b909479417b2368438909440f2967ff05c6a9195ed2667254e465e3`. The likeliest next approach is driving the Setup UI itself by keyboard, since the boot prompt proved keyboard input reaches the guest, or rebuilding the ISO with the answer file at its root.
+
+These three rows are the least valuable in the track, so this is documented rather than pursued further.
 
 Exit: one current usable installation or an explicit recoverable no-install in every row, with no orphan launchable payload.
 
