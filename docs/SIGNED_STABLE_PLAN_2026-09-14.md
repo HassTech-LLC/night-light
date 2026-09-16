@@ -77,14 +77,22 @@ The published build tries to open the download page unattended, which is what Sm
 
 **Environment prepared 2026-09-15.** Hyper-V and Windows Sandbox are enabled on the host and awaiting a reboot. No third-party agent-VM project is used: those are benchmark harnesses, mostly Linux-hosted, and would stack Docker and nested virtualisation beneath the Windows APIs under test. Windows Sandbox needs no image and ships without WebView2, so it covers the missing-runtime row directly. Hyper-V supplies checkpoints for the rest and needs a Windows 11 image.
 
-Still needs a disposable Windows image, because these exercise the operating system rather than the transaction logic:
+**Rows done in Windows Sandbox 2026-09-15**, no VM image required. Sandbox is a pristine Windows 11 Enterprise (build 10.0.26100) every launch. The harness installs the WebView2 Runtime first, since Sandbox ships without it.
 
-1. Clean install of the live 0.3.0 file, first pin, save and enable Smart, uninstall; inventory before and after.
-2. Upgrade from the live 0.2.0 file to 0.3.0; preferences and pins preserved.
-3. Abrupt power loss mid-transaction. The harness proves the journal survives a killed process; it cannot prove behaviour across an unflushed disk cache.
-4. Missing WebView2 runtime; setup stops without changing the app and links to Microsoft.
-5. Second user on the same machine; IPC endpoint ownership and config isolation.
-6. Disk-full during commit, and a stale legacy pin from the Antigravity prototype.
+| Row | Result |
+|---|---|
+| Clean install of live 0.3.0 | Exit 0 in 3.6 s. 45 files, uninstall key with DisplayVersion 0.3.0 and Publisher HassTech, both Start shortcuts created, startup Run value left unset because autostart is opt-in |
+| Uninstall | Exit 0. App, uninstall key and shortcuts all gone; nothing left behind |
+| Upgrade live 0.2.0 to 0.3.0 | Both exit 0. Exactly one `NightLight.exe`, no `.previous-*` residue. A planted `config.json` and an unrelated `user-note.txt` both survived untouched |
+| Missing WebView2 runtime | Both the published and fixed builds refuse to install and exit 2, which is the required behaviour |
+
+Incidental confirmation: 0.2.0 reports no DisplayVersion in Installed apps, and the upgrade populates it. That is the metadata gap fixed earlier, observed end to end.
+
+Still needs a Hyper-V VM, because these exercise the operating system rather than the transaction logic:
+
+1. Abrupt power loss mid-transaction. The harness proves the journal survives a killed process; it cannot prove behaviour across an unflushed disk cache.
+2. Second user on the same machine; IPC endpoint ownership and config isolation.
+3. Disk-full during commit, and a stale legacy pin from the Antigravity prototype.
 
 Exit: one current usable installation or an explicit recoverable no-install in every row, with no orphan launchable payload.
 
